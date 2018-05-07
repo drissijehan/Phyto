@@ -58,8 +58,10 @@ BNVD4 <- iconv.data.frame(BNVD2)
 expect_equal(dim(BNVD4),dim(BNVD2))
 
 ## retirer le all.x quand on aura réglé le problème corse
-BNVD5<- merge(BNVD4, frenchDepartements[,c("CODE_REG","CODE_DEPT","NOM_REG")], by= "CODE_DEPT",all.x=TRUE)
+BNVD5<- merge(BNVD4, frenchLandscape::frenchDepartements[,c("CODE_REG","CODE_DEPT","NOM_REG")], by= "CODE_DEPT",all.x=TRUE)
 expect_equal(nrow(BNVD5),nrow(BNVD4)) # diff 2 == problème avec la corse
+
+names(BNVD5) <- iconv(names(BNVD5),to="ASCII//TRANSLIT")
 
 saveAs(BNVD5,"BNVD",folderOut)
 
