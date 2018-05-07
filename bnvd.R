@@ -11,7 +11,6 @@ bnvd_2017 <- read_delim("carto_init/bnvdAcheteur/BNVD_INERIS_20180313_PRESSIONS_
 
 BNVD<- rbind(bnvd_2013,bnvd_2014,bnvd_2015,bnvd_2016,bnvd_2017)
 
-
 Annee_BNVD<- c(rep("2013",nrow(bnvd_2013)),rep("2014", nrow(bnvd_2014)), rep("2015", nrow(bnvd_2015)),rep("2016", nrow(bnvd_2016)), rep("2017", nrow(bnvd_2017)))
 
 BNVD <- cbind(BNVD, Annee_BNVD)
@@ -34,7 +33,7 @@ iconv.data.frame<-function(df,...){
   df.new<-do.call("data.frame",df.list) 
   return(df.new) 
 } 
-BNVD=iconv.data.frame(BNVD)
+BNVD <- iconv.data.frame(BNVD)
 BNVD<- merge(BNVD, dpt, by= "CODE_DEPT")
 save(BNVD,file ="BNVD.rda")
 
