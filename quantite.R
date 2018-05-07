@@ -4,20 +4,24 @@ library(readr)
 library(readxl)
 library(stringr)
 
-load("pk.rda")
-load("EPHY.rda")
-load("BNVD_2014.rda")
-# CALCUL QUANTITE PK PAR PRODUIT ET REGION
+dataFolder <- "/media/5AE1EC8814E5040E"
+load(file.path(dataFolder,"donnees_R","PK","pk2014.rda"))
+load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
+load(file.path(dataFolder,"donnees_R","BNVD","BNVD_2014.rda"))
+# CALCUL QUANTITE PK PAR PRODUIT ET REGION (aggrègre les différentes cultures)
 quanti <- aggregate(pk$quantite_pk,by=list(pk$PHYTOPROD,pk$CODE_REG),FUN=sum)
 colnames(quanti) <- c("PHYTOPROD","CODE_REG","quantite_pk")
+
+# focus sur la france entière
 quanti <- quanti[quanti$CODE_REG=="00",]
 quanti$CODE_REG <- NULL
 
 # INTEGRATION DONNEES BNVD
-bnvdProd <- unique(BNVD_2014[,-c(7:10)])
-bnvdProd <- aggregate(bnvdProd[,"Quantité.produit"] ,by=list(bnvdProd$AMM),FUN=sum)
+iNotDup <- which(!duplicated(BNVD_2014[,c("Code.postal.acheteur","AMM")]))
+bnvdProd <- BNVD_2014[iNotDup,-c(7:10)]
+bnvdProd <- aggregate(bnvdProd[,"Quantite.produit"],by=list(bnvdProd$AMM),FUN=sum)
 colnames(bnvdProd) <- c("PHYTOPROD","quantite_bnvd")
-quanti <- merge(quanti,bnvdProd,all=T)
+quanti <- merge(quanti,bnvdProd,all=T,by=c("PHYTOPROD"))
 
 #COMPARAISON PK / BNVD
 # CALCUL RAPPORT PK / BNVD
