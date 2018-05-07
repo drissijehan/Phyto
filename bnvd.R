@@ -1,26 +1,45 @@
 library(readr)
+library(testthat)
 library(readxl)
 library(stringr)
-load("dpt.rda")
+library("DataManagement")
+library("data.table")
 
-bnvd_2013 <- read_delim("carto_init/bnvdAcheteur/BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_2013_1267_1389_20171229V5.csv", ";", escape_double = FALSE, trim_ws = TRUE)
-bnvd_2014<- read_delim("carto_init/bnvdAcheteur/BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_2014_1267_1389_20171229V5.csv",  ";", escape_double = FALSE, trim_ws = TRUE)
-bnvd_2015 <- read_delim("carto_init/bnvdAcheteur/BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_2015_1267_1389_20171229V5.csv", ";", escape_double = FALSE, trim_ws = TRUE)
-bnvd_2016 <- read_delim("carto_init/bnvdAcheteur/BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_2016_1267_1389_20171229V5.csv", ";", escape_double = FALSE, trim_ws = TRUE)
-bnvd_2017 <- read_delim("carto_init/bnvdAcheteur/BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_2017_1267_1389_20171229V5.csv", ";", escape_double = FALSE, trim_ws = TRUE)
+NumToNChar <- function(num,nChar=2){
+    fillIn <- as.character(10^nChar)
+    num <- paste0(fillIn, num)
+    out <- gsub(paste0(".*(.{",nChar,"})$"), "\\1", num)
+    return(out)
+}
 
-BNVD<- rbind(bnvd_2013,bnvd_2014,bnvd_2015,bnvd_2016,bnvd_2017)
+dataFolder <- "/media/5AE1EC8814E5040E" # Corentin
+folderIn <- file.path(dataFolder,"carto_init","bnvdAcheteur")
+folderOut <- file.path(dataFolder,"donnees_R","BNVD")
 
+bnvd <- list()
+for(year in 2013:2017){
+    fileName <-paste0("BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_",year,"_1267_1389_20171229V5.csv")
+    bName <- as.character(year)
+    bnvd[[bName]] <- read.csv(file.path(folderIn,fileName),
+                          fileEncoding="CP1252",sep=";",skip = 2)
+    bnvd[[bName]]$Annee_BNVD <- year
+}
+BNVD <- data.frame(data.table::rbindlist(bnvd))
 
-Annee_BNVD<- c(rep("2013",nrow(bnvd_2013)),rep("2014", nrow(bnvd_2014)), rep("2015", nrow(bnvd_2015)),rep("2016", nrow(bnvd_2016)), rep("2017", nrow(bnvd_2017)))
+expect_equal(nrow(BNVD),sum(unlist(lapply(bnvd,nrow))))
 
-BNVD <- cbind(BNVD, Annee_BNVD)
-
-## Passer du code postal � depart � reg
-vect<- BNVD$`Code postal acheteur`
+## Passer du code postal à departement et région
+vect<- BNVD$Code.postal.acheteur
 remplacer<- function(vect){str_sub(vect,1,-4)}
-v<-lapply(vect, remplacer)
-BNVD<- cbind(BNVD, CODE_DEPT= unlist(v))
+v<-NumToNChar(unlist(lapply(vect, remplacer),use.names=FALSE),2)
+# il faudrait ajouter la distinction entre corse du nord et corse du sud 
+# pour avoir les véritables CODE_DEPT
+# pour cela on peut utiliser 
+# Documents/recherche/INRA/cartographieGenerale/administrative/communes/2017-09-05_laposte_hexasmal.csv
+# en les géolocalisant dans corse du nord/corse du sud
+
+BNVD2 <- cbind(BNVD, CODE_DEPT= v)
+expect_equal(nrow(BNVD2),nrow(BNVD))
 
 iconv.data.frame<-function(df,...){ 
   df.names<-iconv(names(df),...) 
@@ -34,9 +53,18 @@ iconv.data.frame<-function(df,...){
   df.new<-do.call("data.frame",df.list) 
   return(df.new) 
 } 
-BNVD=iconv.data.frame(BNVD)
-BNVD<- merge(BNVD, dpt, by= "CODE_DEPT")
-save(BNVD,file ="BNVD.rda")
 
-BNVD_2014<-BNVD[BNVD$Annee_BNVD == "2014",]
-save(BNVD_2014,file ="BNVD_2014.rda")
+BNVD4 <- iconv.data.frame(BNVD2)
+expect_equal(dim(BNVD4),dim(BNVD2))
+
+## retirer le all.x quand on aura réglé le problème corse
+BNVD5<- merge(BNVD4, frenchDepartements[,c("CODE_REG","CODE_DEPT","NOM_REG")], by= "CODE_DEPT",all.x=TRUE)
+expect_equal(nrow(BNVD5),nrow(BNVD4)) # diff 2 == problème avec la corse
+
+saveAs(BNVD5,"BNVD",folderOut)
+
+BNVD_2014<-BNVD5[BNVD5$Annee_BNVD == "2014",]
+expect_equal(nrow(BNVD_2014),nrow(bnvd[["2014"]]))
+
+saveAs(BNVD_2014,"BNVD_2014",folderOut)
+
