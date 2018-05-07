@@ -6,14 +6,14 @@ output:
   html_document: default
   pdf_document: default
 ---
-#Volume BNVD cohérent avec Pk ?
+#Volume BNVD coh?rent avec Pk ?
 ```{r, warning=FALSE, message=FALSE, include=TRUE}
 load("Data_IFT_PK.rda")
 load("IFT_PK.rda")
 load("carte.rda")
 load("carte2.rda")
 load("quanti.rda")
-load("Indice_Shannon.rda")
+# load("Indice_Shannon.rda")
 load("quanti.rda")
 
 library(plotly)
@@ -23,8 +23,8 @@ library(ggplot2)
 
 ```
 
-#Volume BNVD cohérent avec Pk ?
-##Histogramme du rapport entre quantité BNVD et quantité PK
+#Volume BNVD coh?rent avec Pk ?
+##Histogramme du rapport entre quantit? BNVD et quantit? PK
 ```{r, message=FALSE , warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center", include=FALSE}
 plot_ly(x = ~ log(quanti$rapport_bnvd_pk), type = "histogram")%>%
   layout(title= "Histogramme Rapport Quantite BNVD/PK")
@@ -63,30 +63,30 @@ p=plot_ly(quanti , x = ~quantite_pk , y = ~quantite_bnvd)%>%
 add_lines(p,x=quanti$quantite_pk,y=quanti$quantite_pk)
 ```
 
-```{r}
-library(broom)
-dat<-na.omit(quanti)
-m <- loess(quantite_bnvd ~ quantite_pk, data = dat)
- plot_ly(
-     dat, x = ~quantite_pk, y = ~quantite_bnvd,
-     text = ~paste("qUANTITE pk: ", quantite_pk ,  '<br>Quantite BNVD:', quantite_bnvd),
-       size = ~quantite_bnvd,  colors = "Set1"
- )   %>%
-   add_markers(y = ~quantite_bnvd, text = rownames(dat), showlegend = FALSE) %>%
- add_lines(y = ~fitted(loess(quantite_bnvd ~ quantite_pk)),
-            line = list(color = 'rgba(7, 164, 181, 1)'),
-            name = "Loess Smoother") %>%
-  add_ribbons(data = augment(m),
-              ymin = ~.fitted - 1.96 * .se.fit,
-              ymax = ~.fitted + 1.96 * .se.fit,
-              line = list(color = 'rgba(7, 164, 181, 0.05)'),
-              fillcolor = 'rgba(7, 164, 181, 0.2)',
-              name = "Standard Error")
-```
+# ```{r}
+# library(broom)
+# dat<-na.omit(quanti)
+# m <- loess(quantite_bnvd ~ quantite_pk, data = dat)
+#  plot_ly(
+#      dat, x = ~quantite_pk, y = ~quantite_bnvd,
+#      text = ~paste("qUANTITE pk: ", quantite_pk ,  '<br>Quantite BNVD:', quantite_bnvd),
+#        size = ~quantite_bnvd,  colors = "Set1"
+#  )   %>%
+#    add_markers(y = ~quantite_bnvd, text = rownames(dat), showlegend = FALSE) %>%
+#  add_lines(y = ~fitted(loess(quantite_bnvd ~ quantite_pk)),
+#             line = list(color = 'rgba(7, 164, 181, 1)'),
+#             name = "Loess Smoother") %>%
+#   add_ribbons(data = augment(m),
+#               ymin = ~.fitted - 1.96 * .se.fit,
+#               ymax = ~.fitted + 1.96 * .se.fit,
+#               line = list(color = 'rgba(7, 164, 181, 0.05)'),
+#               fillcolor = 'rgba(7, 164, 181, 0.2)',
+#               name = "Standard Error")
+# ```
 
 
 #Indice de Frequence de Traitement IFT
-##Histogramme du l'IFT calculé à partir de PK
+##Histogramme du l'IFT calcul? ? partir de PK
 ```{r, warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center", include=FALSE}
 plot_ly(x = ~ log(Data_IFT_PK$IFT), type = "histogram")%>%
   layout(title= "Histogramme de IFT PK")
@@ -99,7 +99,7 @@ scale_x_log10() + theme_bw()
 ggplotly(p)
 ```
 
-##Repartition de l'IFT de chaque produit pour chaque region triés par mediane
+##Repartition de l'IFT de chaque produit pour chaque region tri?s par mediane
 ```{r, warning=FALSE , fig.width=12, fig.height=6 , fig.align = "center"}
 dat <- Data_IFT_PK[which(Data_IFT_PK$CODE_REG=="00"),]
 dat$Nom.du.produit<- as.factor(dat$Nom.du.produit)
@@ -126,7 +126,7 @@ ggplotly(p)
 ```
 
 ##Repartition de l'IFT de chaque categorie pour chaque espece _ pk
-###Distribution des IFT des différents produits par espèce et par catégorie de produits sur l'ensemble de la France ?
+###Distribution des IFT des diff?rents produits par esp?ce et par cat?gorie de produits sur l'ensemble de la France ?
 ```{r, warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center", message=FALSE}
 
 dat<- Data_IFT_PK[which(Data_IFT_PK$CODE_REG =="00"),]
@@ -139,7 +139,7 @@ p <- ggplot(dat, aes(x=Fonction, y=IFT,fill=ESPECE))+
 ggplotly(p)
 ```
 
-###variations des IFT suivant les régions par espèce et par catégorie de produits
+###variations des IFT suivant les r?gions par esp?ce et par cat?gorie de produits
 
 ```{r, warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center", message=FALSE}
 dat<-IFT_PK[which(IFT_PK$NOM_REG !="FR"),]
@@ -158,7 +158,7 @@ plot_ly(Data_IFT_PK, x = ~NOM_REG, y = ~IFT, color = ~ESPECE, type = "box") %>%
     layout(boxmode = "group")
 ```
 
-##Histogramme de l'IFT selon les differents catégories
+##Histogramme de l'IFT selon les differents cat?gories
 ```{r, warning=FALSE, fig.width=10, fig.height=7 , fig.align = "center"}
 ax <- list(title = "",zeroline = FALSE, showline = FALSE, showticklabels = FALSE, showgrid = FALSE)
 vline <- function(x = 0) {
@@ -174,8 +174,8 @@ plot_ly(alpha = 0.6) %>%
     add_histogram(x = ~log(dat[dat$Fonction =="Molluscicide",]$IFT), name= "Molluscicide") %>%
     add_histogram(x = ~log(dat[dat$Fonction =="Fongicide",]$IFT), name= "Fongicide") %>%
     add_histogram(x = ~log(dat[dat$Fonction =="Acaricide",]$IFT), name= "Acaricicde") %>%
-    add_histogram(x = ~log(dat[dat$Fonction =="Dévitalisation",]$IFT), name= "Dévitalisation") %>%
-    add_histogram(x = ~log(dat[dat$Fonction =="Stimul. Déf. Naturelles",]$IFT), name= "Stimul. Déf. Naturelles") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="D?vitalisation",]$IFT), name= "D?vitalisation") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Stimul. D?f. Naturelles",]$IFT), name= "Stimul. D?f. Naturelles") %>%
     layout(barmode = "overlay")%>%
     layout(xaxis = ax)  %>%
     layout(shapes = list(vline(0)))
@@ -183,18 +183,17 @@ plot_ly(alpha = 0.6) %>%
 
 ##Repartition du rapport quantite BNVD/PK par region
 ```{r,  fig.align = "center", message=FALSE}
-library(sp)
-spplot(carte,13)
+sp::spplot(carte,"rapport_bnvd_reg_pk")
 ```
 
 ##Repartition du dose pleine BNVD/PK par region
 ```{r ,  fig.align = "center", message=FALSE}
 library(sp)
-spplot(carte2,13)
+spplot(carte2,"x")
 ```
 
-#Indice de Shannon
-##Histogramme de exp(IS)
-```{r, warning=FALSE,  fig.align = "center"}
-plot_ly(x = ~ exp(Indice_Shannon$IS), type = "histogram")
-```
+<!-- #Indice de Shannon -->
+<!-- ##Histogramme de exp(IS) -->
+<!-- ```{r, warning=FALSE,  fig.align = "center"} -->
+<!-- plot_ly(x = ~ exp(Indice_Shannon$IS), type = "histogram") -->
+<!-- ``` -->
