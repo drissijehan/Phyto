@@ -1,4 +1,4 @@
----
+ ---
 title: "Produits Phytosanitaires"
 author: "DRISSI Jihane"
 date: "24 avril 2018"
@@ -54,12 +54,34 @@ ggplotly(p)
 
 ##Repartition des quantites BNVD et Pk 
 ```{r, message=FALSE , warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center"}
+
+p=plot_ly(quanti , x = ~quantite_pk , y = ~quantite_bnvd)%>%
+    
+    add_markers(text = ~paste("Categorie: ", Fonction, '<br>Quantite BNVD:', quantite_bnvd),
+    size = ~Dose.d.application.retenue, color= ~Fonction , colors = "Set1"
+)
+add_lines(p,x=quanti$quantite_pk,y=quanti$quantite_pk)
+```
+
+```{r}
+library(broom)
+dat<-na.omit(quanti)
+m <- loess(quantite_bnvd ~ quantite_pk, data = dat)
  plot_ly(
-     quanti, x = ~quantite_pk, y = ~quantite_bnvd,
-     text = ~paste("Categorie: ", Fonction, '<br>Quantite BNVD:', quantite_bnvd),
-       size = ~quantite_bnvd, color= ~Fonction , colors = "Set1"
- )%>%
-  layout(title= "Nuage de points BNVD et PK")
+     dat, x = ~quantite_pk, y = ~quantite_bnvd,
+     text = ~paste("qUANTITE pk: ", quantite_pk ,  '<br>Quantite BNVD:', quantite_bnvd),
+       size = ~quantite_bnvd,  colors = "Set1"
+ )   %>%
+   add_markers(y = ~quantite_bnvd, text = rownames(dat), showlegend = FALSE) %>%
+ add_lines(y = ~fitted(loess(quantite_bnvd ~ quantite_pk)),
+            line = list(color = 'rgba(7, 164, 181, 1)'),
+            name = "Loess Smoother") %>%
+  add_ribbons(data = augment(m),
+              ymin = ~.fitted - 1.96 * .se.fit,
+              ymax = ~.fitted + 1.96 * .se.fit,
+              line = list(color = 'rgba(7, 164, 181, 0.05)'),
+              fillcolor = 'rgba(7, 164, 181, 0.2)',
+              name = "Standard Error")
 ```
 
 

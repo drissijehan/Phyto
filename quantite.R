@@ -12,9 +12,10 @@ load(file.path(dataFolder,"donnees_R","BNVD","BNVD_2014.rda"))
 quanti <- aggregate(pk$quantite_pk,by=list(pk$PHYTOPROD,pk$CODE_REG),FUN=sum)
 colnames(quanti) <- c("PHYTOPROD","CODE_REG","quantite_pk")
 
-# focus sur la france entière
+# focus sur l'ensemble de la France (retire les détails par région)
 quanti <- quanti[quanti$CODE_REG=="00",]
 quanti$CODE_REG <- NULL
+stop("tout va bien")
 
 # INTEGRATION DONNEES BNVD
 iNotDup <- which(!duplicated(BNVD_2014[,c("Code.postal.acheteur","AMM")]))
