@@ -4,14 +4,18 @@ library(readr)
 library(readxl)
 library(stringr)
 
-load("pk.rda")
-load("EPHY.rda")
-load("BNVD_2014.rda")
+dataFolder <- "~/data"
+load(file.path(dataFolder,"donnees_R","PK","pk2014.rda"))
+load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
+load(file.path(dataFolder,"donnees_R","BNVD","BNVD_2014.rda"))
+
 # CALCUL QUANTITE PK PAR PRODUIT ET REGION
 quanti <- aggregate(pk$quantite_pk,by=list(pk$PHYTOPROD,pk$CODE_REG),FUN=sum)
 colnames(quanti) <- c("PHYTOPROD","CODE_REG","quantite_pk")
+# focus sur l'ensemble de la France (retire les détails par région)
 quanti <- quanti[quanti$CODE_REG=="00",]
 quanti$CODE_REG <- NULL
+stop("tout va bien")
 
 # INTEGRATION DONNEES BNVD
 bnvdProd <- unique(BNVD_2014[,-c(7:10)])
