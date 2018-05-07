@@ -35,8 +35,6 @@ quanti$diff_pk_bnvd <- quanti$quantite_pk-quanti$quantite_bnvd
 quanti<-merge(unique(quanti), unique(EPHY[,c(2,3)]),by.x= "PHYTOPROD", by.y="AMM")
 quanti$Fonction<-as.factor(quanti$Fonction)
 
-
-
 ## On va ajouter la dose homologuee a notre base pour le scatter plot 
 DH<-aggregate(Dose.d.application.retenue~AMM, EPHY, median)
 quanti<- merge(unique(quanti), unique(DH), by.x="PHYTOPROD", by.y="AMM")

@@ -1,7 +1,9 @@
 #Carte Rapport bnvd pk
 library(stringr)
 library(sp)
-load("BNVD_2014.rda")
+
+source("persoData.R") # dataFolder 
+load(file.path(dataFolder,"donnees_R","BNVD","BNVD_2014.rda"))
 
 #Calculer la quantite utilisée de chaque produit dans chaque region
 bnvd_reg<- aggregate(BNVD_2014[,5]~AMM+CODE_REG, data = BNVD_2014, sum)
@@ -18,9 +20,9 @@ bnvd_reg$rapport_bnvd_reg_pk<- bnvd_reg$quantite_bnvd_reg / bnvd_reg$quantite_pk
 
 #median du rapport et la carte
 carte<-aggregate(rapport_bnvd_reg_pk~CODE_REG, data = bnvd_reg[bnvd_reg$CODE_REG!="00",], median)
-carte<- merge(carte, dpt[,1:2], by= "CODE_REG")
+# carte<- merge(carte, dpt[,1:2], by= "CODE_REG")
 
-carte<-merge(frenchDepartements, carte, by="CODE_DEPT", duplicateGeoms = FALSE)
+carte<-merge(frenchLandscape::frenchDepartements, carte, by="CODE_REG", duplicateGeoms = FALSE)
 
 save(carte,file ="carte.rda")
 
@@ -38,11 +40,11 @@ carte2<-cbind.data.frame(x,reg)
 
 carte2<-aggregate(x~reg, data = carte2, median)
 carte2<- subset(carte2, reg!= "00")
-carte2<- merge(carte2, dpt[,1:2], by.x="reg" , by.y="CODE_REG")
+# carte2<- merge(carte2, dpt[,1:2], by.x="reg" , by.y="CODE_REG")
 
-carte2<-merge(frenchDepartements, carte2, by="CODE_DEPT", duplicateGeoms = FALSE)
+carte2<-merge(frenchLandscape::frenchDepartements, carte2, by.x="CODE_REG",by.y="reg", duplicateGeoms = FALSE)
 
-spplot(carte2,13)
+spplot(carte2,"x")
 
 save(carte2,file ="carte2.rda")
 
