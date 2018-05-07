@@ -1,0 +1,178 @@
+---
+title: "Produits Phytosanitaires"
+author: "DRISSI Jihane"
+date: "24 avril 2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+#Volume BNVD cohérent avec Pk ?
+```{r, warning=FALSE, message=FALSE, include=TRUE}
+load("Data_IFT_PK.rda")
+load("IFT_PK.rda")
+load("carte.rda")
+load("carte2.rda")
+load("quanti.rda")
+load("Indice_Shannon.rda")
+load("quanti.rda")
+
+library(plotly)
+library(sp)
+library(stringr)
+library(ggplot2)
+
+```
+
+#Volume BNVD cohérent avec Pk ?
+##Histogramme du rapport entre quantité BNVD et quantité PK
+```{r, message=FALSE , warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center", include=FALSE}
+plot_ly(x = ~ log(quanti$rapport_bnvd_pk), type = "histogram")%>%
+  layout(title= "Histogramme Rapport Quantite BNVD/PK")
+```
+
+```{r, message=FALSE , warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center"}
+p<-ggplot(quanti, aes(rapport_bnvd_pk)) + 
+geom_histogram(binwidth = 0.2, fill="#3399CC") + 
+scale_x_log10() + theme_bw() +
+geom_vline(data=quanti, aes(xintercept=mean(rapport_bnvd_pk, na.rm=T), color = "Mean"),
+             linetype="dashed", size=0.5, show_guide=T) +
+geom_vline(data=quanti, aes(xintercept=median(rapport_bnvd_pk, na.rm=T), color = "Median"),
+             linetype="dashed", size=0.5, show_guide=T) + 
+geom_vline(data=quanti, aes(xintercept=1, color = "Quantite Egale"),
+             linetype="line", size=0.5, show_guide=T) +
+scale_color_manual("Statistics", values = c("Mean" = "red", "Median" = "green", "Quantite Egale" = "#CC33FF")) 
+ggplotly(p)
+```
+
+
+
+**La moyenne: 2.76** <br/>
+**La mediane: 1.16** <br/>
+**1er quartile: 0.94** <br/>
+**3eme quartile: 1.58** <br/>  
+
+
+##Repartition des quantites BNVD et Pk 
+```{r, message=FALSE , warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center"}
+ plot_ly(
+     quanti, x = ~quantite_pk, y = ~quantite_bnvd,
+     text = ~paste("Categorie: ", Fonction, '<br>Quantite BNVD:', quantite_bnvd),
+       size = ~quantite_bnvd, color= ~Fonction , colors = "Set1"
+ )%>%
+  layout(title= "Nuage de points BNVD et PK")
+```
+
+
+#Indice de Frequence de Traitement IFT
+##Histogramme du l'IFT calculé à partir de PK
+```{r, warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center", include=FALSE}
+plot_ly(x = ~ log(Data_IFT_PK$IFT), type = "histogram")%>%
+  layout(title= "Histogramme de IFT PK")
+```
+
+```{r, warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center"}
+p<-ggplot(Data_IFT_PK, aes(IFT)) + 
+geom_histogram(binwidth = 0.1, fill="#3399CC") + 
+scale_x_log10() + theme_bw()
+ggplotly(p)
+```
+
+##Repartition de l'IFT de chaque produit pour chaque region triés par mediane
+```{r, warning=FALSE , fig.width=12, fig.height=6 , fig.align = "center"}
+dat <- Data_IFT_PK[which(Data_IFT_PK$CODE_REG=="00"),]
+dat$Nom.du.produit<- as.factor(dat$Nom.du.produit)
+oind <- order(as.numeric(by(-(dat$IFT), dat$Nom.du.produit, median)))    
+dat$Nom.du.produit <- ordered(dat$Nom.du.produit, levels=levels(dat$Nom.du.produit)[oind]) 
+plot_ly(dat, x = ~Nom.du.produit, y = ~IFT, color = ~Fonction, type = "box") %>%
+     layout(boxmode = "group")
+```
+
+##Repartition de l'IFT par produit et par espece 
+```{r, warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center", message=FALSE}
+dat <- Data_IFT_PK[which(Data_IFT_PK$CODE_REG!="00"),]
+dat$PHYTOPROD<- as.factor(dat$PHYTOPROD)
+oind <- order(as.numeric(by(-(dat$IFT), dat$PHYTOPROD, median)))    
+dat$PHYTOPROD <- ordered(dat$PHYTOPROD, levels=levels(dat$PHYTOPROD)[oind]) 
+
+p <- ggplot(dat, aes(x=PHYTOPROD, y=IFT,fill=Fonction))+
+     geom_boxplot()+
+     facet_wrap(~ESPECE,  scale="free")+
+   
+     theme(axis.text.x=element_text(angle=-90, vjust=0.4,hjust=1))
+ 
+ggplotly(p)
+```
+
+##Repartition de l'IFT de chaque categorie pour chaque espece _ pk
+###Distribution des IFT des différents produits par espèce et par catégorie de produits sur l'ensemble de la France ?
+```{r, warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center", message=FALSE}
+
+dat<- Data_IFT_PK[which(Data_IFT_PK$CODE_REG =="00"),]
+p <- ggplot(dat, aes(x=Fonction, y=IFT,fill=ESPECE))+
+     geom_boxplot()+
+     facet_grid(.~ESPECE ,  scale="free")+
+     labs(x="X (binned)")+
+     theme(axis.text.x=element_text(angle=-90, vjust=0.4,hjust=1))
+ 
+ggplotly(p)
+```
+
+###variations des IFT suivant les régions par espèce et par catégorie de produits
+
+```{r, warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center", message=FALSE}
+dat<-IFT_PK[which(IFT_PK$NOM_REG !="FR"),]
+p <- ggplot(dat, aes(x=Fonction, y=IFT,fill=ESPECE))+
+     geom_boxplot()+
+     facet_grid(.~ESPECE ,  scale="free")+
+     labs(x="X (binned)")+
+     theme(axis.text.x=element_text(angle=-90, vjust=0.4,hjust=1))
+ 
+ggplotly(p)
+```
+
+##Repartition de l'IFT de chaque region pour chaque espece
+```{r, warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center", message=FALSE}
+plot_ly(Data_IFT_PK, x = ~NOM_REG, y = ~IFT, color = ~ESPECE, type = "box") %>%
+    layout(boxmode = "group")
+```
+
+##Histogramme de l'IFT selon les differents catégories
+```{r, warning=FALSE, fig.width=10, fig.height=7 , fig.align = "center"}
+ax <- list(title = "",zeroline = FALSE, showline = FALSE, showticklabels = FALSE, showgrid = FALSE)
+vline <- function(x = 0) {
+  list( type = "line", y0 = 0, y1 = 1, yref = "paper", x0 = x,  x1 = x, line = list(color = "red"))
+}
+dat<-Data_IFT_PK[which(Data_IFT_PK$NOM_REG !="FR"),]
+IFT_PK=log(dat$IFT)
+plot_ly(alpha = 0.6) %>%
+    add_histogram(x = ~IFT_PK , name= "IFT PK") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Herbicide",]$IFT), name = "Herbicide") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Fongicide",]$IFT), name= "Fongicide") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Insecticide",]$IFT), name= "Insecticide") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Molluscicide",]$IFT), name= "Molluscicide") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Fongicide",]$IFT), name= "Fongicide") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Acaricide",]$IFT), name= "Acaricicde") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Dévitalisation",]$IFT), name= "Dévitalisation") %>%
+    add_histogram(x = ~log(dat[dat$Fonction =="Stimul. Déf. Naturelles",]$IFT), name= "Stimul. Déf. Naturelles") %>%
+    layout(barmode = "overlay")%>%
+    layout(xaxis = ax)  %>%
+    layout(shapes = list(vline(0)))
+```
+
+##Repartition du rapport quantite BNVD/PK par region
+```{r,  fig.align = "center", message=FALSE}
+library(sp)
+spplot(carte,13)
+```
+
+##Repartition du dose pleine BNVD/PK par region
+```{r ,  fig.align = "center", message=FALSE}
+library(sp)
+spplot(carte2,13)
+```
+
+#Indice de Shannon
+##Histogramme de exp(IS)
+```{r, warning=FALSE,  fig.align = "center"}
+plot_ly(x = ~ exp(Indice_Shannon$IS), type = "histogram")
+```
