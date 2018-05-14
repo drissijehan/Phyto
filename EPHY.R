@@ -4,45 +4,45 @@ library(stringr)
 library(Hmisc)
 dataFolder <- "~/data"
 
-ToutPPP_2008 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2008.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2008 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2008.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                           skip = 4)
 
-ToutPPP_2009 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2009.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2009 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2009.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2010 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2010.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2010 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2010.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2011 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2011.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2011 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2011.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2012 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2012.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2012 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2012.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2013 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2013.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2013 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2013.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2014 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2014.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2014 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2014.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2015 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2015.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2015 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2015.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2016 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2016.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2016 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2016.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 
-ToutPPP_2017 <- read_delim(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2017.csv"), 
-                           ";", escape_double = FALSE, trim_ws = TRUE, 
-                           skip = 3)
+ToutPPP_2017 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2017.csv"), 
+                           ";", fileEncoding="CP1252",header=F,
+                         skip = 4)
 EPHY<- rbind(ToutPPP_2008, ToutPPP_2009, ToutPPP_2010, ToutPPP_2011, ToutPPP_2012, ToutPPP_2013, ToutPPP_2014, ToutPPP_2015, ToutPPP_2016, ToutPPP_2017)
 colnames(EPHY) <- c("Nom du produit","AMM","Fonction","Etat du produit","Description de l'intrant Date de decision"
                     ,"date de retrait","Filiere","Gamme d'usages","Etat de l usage","Usages.Date de decision","Intitule","Condition d emploi"
