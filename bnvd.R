@@ -21,7 +21,7 @@ for(year in 2013:2017){
     fileName <-paste0("BNVD_INERIS_20180313_PRESSIONS_COMMUNE_PRODUIT_DETAILLE_",year,"_1267_1389_20171229V5.csv")
     bName <- as.character(year)
     bnvd[[bName]] <- read.csv(file.path(folderIn,fileName),
-                          fileEncoding="CP1252",sep=";",skip = 2)
+                          fileEncoding="CP1252",sep=";",skip = 2, encoding= "UTF-8")
     bnvd[[bName]]$Annee_BNVD <- year
 }
 BNVD <- data.frame(data.table::rbindlist(bnvd))
