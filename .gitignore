@@ -4,3 +4,6 @@ figure/
 *.rda
 *.html
 *.md
+.Rhistory
+.RData
+
