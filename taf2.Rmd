@@ -1,0 +1,78 @@
+---
+title: "TAF2"
+author: "DRISSI Jihane"
+date: "22 mai 2018"
+output: html_document
+---
+
+
+```{r, include=FALSE}
+dataFolder <- "~/data"
+library("DataManagement")
+library(plotly)
+
+```
+
+```{r setup}
+load(file.path(dataFolder,"donnees_R","BNVD","Table_Composition.rda"))
+head(Table_Composition)
+```
+
+
+```{r cars}
+df_mean<- aggregate(Concentration~AMM+Substance, data = Table_Composition, mean)
+df_mean <- ChangeNameCol(df_mean,"Concentration","Mean")
+df_sd<- aggregate(Concentration~AMM+Substance, data = Table_Composition, sd)
+df_sd <- ChangeNameCol(df_sd,"Concentration","Sd")
+df2<- merge(df_mean,df_sd,by=c("AMM","Substance"))
+df2$CoefVar <- df2$Sd / df2$Mean
+```
+
+##Histogramme Concentration
+```{r, echo=FALSE}
+plot_ly(df2, x = ~ CoefVar, type = "histogram", text = ~paste("AMM:", AMM, "Substance:" , Substance)) 
+```
+
+
+```{r, include=FALSE}
+load(file.path(dataFolder,"donnees_R","BNVD","Table_Correspondance.rda"))
+```
+
+```{r  rows.print=10, paged.print= TRUE}
+head(Table_Correspondance)
+```
+
+```{r}
+load(file.path(dataFolder,"donnees_R","BNVD","Table_Distribution.rda"))
+```
+
+```{r}
+head(Table_Distribution)
+```
+
+```{r, include=FALSE}
+dat<-Table_Distribution
+dat$barplot<-c("TFF","TTF","TFT","TTT")
+dat<-dat[dat$barplot%in%c("TTF","TTT"),]
+
+p <- plot_ly(dat, x = ~barplot, y = ~Acaricide.Freq, type = 'bar', name = 'Acaricide') %>%
+  add_trace(y = ~Fongicide.Freq, name = 'Fongicide') %>%
+  add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
+  add_trace(y = ~Stimul..Déf..Naturelles.Freq, name = 'Stimul..Déf..Naturelles') %>%
+  add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
+  add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
+  add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
+  add_trace(y = ~Nématicide.Freq, name = 'Nématicide') %>%
+  add_trace(y = ~Stimulateur.des.défenses.naturelles.Freq, name = 'Stimulateur.des.défenses.naturelles') %>%
+  add_trace(y = ~Dévitalisation.Freq, name = 'Dévitalisation') %>%
+  add_trace(y = ~Taupicide.Freq, name = 'Taupicide') %>%
+  add_trace(y = ~Rodenticide.Freq, name = 'Rodenticide.Freq') %>%
+  add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
+  layout(yaxis = list(title = 'Count'), barmode = 'stack')
+
+```
+
+```{r}
+p
+```
+
