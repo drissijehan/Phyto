@@ -2,6 +2,8 @@ library(readr)
 library(readxl)
 library(stringr)
 library(Hmisc)
+library(testthat)
+
 dataFolder <- "~/data"
 
 ToutPPP_2008 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2008.csv"), 
@@ -73,4 +75,13 @@ EPHY=iconv.data.frame(EPHY)
 
 EPHY$Dose.d.application.retenue <-gsub(",", ".", EPHY$Dose.d.application.retenue)
 EPHY$Dose.d.application.retenue<- as.numeric(as.character( EPHY$Dose.d.application.retenue))
+
+# extraction chaine de caractere designant la culture a partir de l'intitule de l'usage
+intituleCulture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE)
+                          ,function(x) x[1])
+
+expect_equal(nrow(EPHY),length(intituleCulture))
+
+EPHY <- cbind(EPHY,intituleCulture)
+
 save(EPHY,file =file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))

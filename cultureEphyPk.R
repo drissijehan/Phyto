@@ -1,19 +1,9 @@
 rm(list=ls())
 
-library(testthat)
-
 # inport donnees ephy et pk
 dataFolder <- "~/data"
 load(file.path(dataFolder,"donnees_R/EPHY/EPHY.rda"))
 load(file.path(dataFolder,"donnees_R/PK/pk2014.rda"))
-
-# extraction chaine de caractere designant la culture a partir de l'intitule de l'usage
-intituleCulture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE)
-               ,function(x) x[1])
-
-expect_equal(nrow(EPHY),length(intituleCulture))
-
-EPHY <- cbind(EPHY,intituleCulture)
 
 # creation d'une table avec chaque intitule culture
 intituleCulture <- data.frame(culture=unique(EPHY$intituleCulture))
