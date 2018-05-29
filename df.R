@@ -128,8 +128,8 @@ expect_equal(nrow(Composition),length(unique(df3$AMM)))
 df4<-merge(dfCorrespondance,DH,by="AMM", all.x=TRUE)
 df4<-merge(df4,Composition,by="AMM", all.x=TRUE)
 
-expect_equal(which(!Table_Correspondance$BNVD),which(is.na(Table_Correspondance$Composition)))
-expect_equal(which(!Table_Correspondance$EPHY),which(is.na(Table_Correspondance$Dose.d.application.retenue)))
+expect_equal(which(!df4$BNVD),which(is.na(df4$Composition)))
+expect_equal(which(!df4$EPHY),which(is.na(df4$Dose.d.application.retenue)))
 #170 AMM sans Dose d'application retenue
 
             
@@ -174,7 +174,7 @@ df6<-t(df6)
 df6<-as.data.frame(df6)
 
 
-#df6 est pour tt la base EPHY -> Je refais le travail pour EPHY$Filiere %in% c("GC","TC")
+#df6 est pour tt la base EPHY -> Je refais le travail pour EPHY$Filiere %in% c("GC","TC") et usage pro
 
 GTC<-subset(EPHY, EPHY$Filiere %in% c("Grandes cultures","Traitements généraux toutes cultures"))
 GTC<-subset(GTC, GTC$Gamme.d.usages%in% c("Professionnel"))
@@ -198,6 +198,7 @@ df66<-t(df66)
 df66<-as.data.frame(df66)
 
 ####### table par categorie GTC Usage PRO#######################
+EPHY[EPHY$Fonction%in%"Stimul. Déf. Naturelles",]<-"Stimulateur des défenses naturelles"
 dfCorrespondanceGTC<-merge(dfCorrespondanceGTC,unique(EPHY[,c("AMM","Fonction")]), by= "AMM",all.x=TRUE)
 df666<- dfCorrespondanceGTC %>%
      split(.$Fonction) %>%
@@ -271,12 +272,12 @@ DistribustionVolume<-merge(T_F, dfCorrespondanceGTC, by="AMM")
 DistribustionVolume<- ChangeNameCol(DistribustionVolume,"do.call.rbind..T_F.","T_F")
 
 
-#EDP BNVD
+#Volume BNVD
 QBNVD<-aggregate(BNVD$`Quantite produit`~AMM, data = BNVD, sum)
 QBNVD <- ChangeNameCol(QBNVD,"BNVD$`Quantite produit`","QBNVD")
 
 
-DistribustionVolume<-merge(DistribustionVolume,QBNVD, by.x="AMM",all.x = TRUE)
+DistribustionVolume<-merge(DistribustionVolume,QBNVD, by="AMM",all.x = TRUE)
 
 Dist<- aggregate(QBNVD~T_F+Fonction, data = DistribustionVolume, sum)
 Dist_Cast<-dcast(Dist, T_F~Fonction)
