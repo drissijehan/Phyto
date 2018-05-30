@@ -2,7 +2,9 @@
 title: "TAF2"
 author: "DRISSI Jihane"
 date: "22 mai 2018"
-output: html_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 
@@ -10,16 +12,24 @@ output: html_document
 dataFolder <- "~/data"
 library("DataManagement")
 library(plotly)
+library(reshape2)
 
 ```
 
-```{r setup}
-load(file.path(dataFolder,"donnees_R","BNVD","Table_Composition.rda"))
-head(Table_Composition)
+#Quelle fiabilité des concentrations de substances dans les produits à partir des différents enregistrements de vente dans la BNVD ? 
+
+##La concentration de chaque produit pour chaque année, code postal et substance:
+```{r setup, include=FALSE}
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Table_Composition.rda"))
+```
+
+###Quantité produite et quantité des substances actives pour chaque produit par année, par code postal et par substance active
+```{r,rows.print=7}
+Table_Composition
 ```
 
 
-```{r cars}
+```{r , include=FALSE}
 df_mean<- aggregate(Concentration~AMM+Substance, data = Table_Composition, mean)
 df_mean <- ChangeNameCol(df_mean,"Concentration","Mean")
 df_sd<- aggregate(Concentration~AMM+Substance, data = Table_Composition, sd)
@@ -28,47 +38,177 @@ df2<- merge(df_mean,df_sd,by=c("AMM","Substance"))
 df2$CoefVar <- df2$Sd / df2$Mean
 ```
 
-##Histogramme Concentration
+### Homogénéité des concentrations de substance par produits dans la BNVD
+
+```{r,rows.print=7}
+df2
+```
+
+###Coefficient de Variation (Sd/Mean)
 ```{r, echo=FALSE}
 plot_ly(df2, x = ~ CoefVar, type = "histogram", text = ~paste("AMM:", AMM, "Substance:" , Substance)) 
 ```
 
+On a **481** observations qu'on a ignoré, ceci est expliqué par **438** observations où on a Sd==NA (une seule variable concentration pour couple AMM+Substance), avec **61** observation où la moyenne est nulle. Enfin, **18** observations où Sd==NA et Mean==0. Alors, on trouve bien: **481=438+61-18**.
+
+```{r}
+length(unique(df2[which(df2$CoefVar>0.1),]$AMM))
+```
+Ces 10 produits présentent 5/10000, en comparant leurs quantités produites par la quantité totale dans la BNVD.
 
 ```{r, include=FALSE}
-load(file.path(dataFolder,"donnees_R","BNVD","Table_Correspondance.rda"))
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Table_Correspondance.rda"))
+```
+###Table des présence, pour toutes cultures, dans les bases BNVD, EPHY et PK avec DH mediane toute culture et composition 
+```{r  rows.print=7, paged.print= TRUE}
+Table_Correspondance
 ```
 
-```{r  rows.print=10, paged.print= TRUE}
-head(Table_Correspondance)
+Attention NA:
+      Dose Homologué == NA --> AMM n'est pas présent dans EPHY ou Dose d'application retenue est NA à la base dans EPHY.
+      Composition == NA --> AMM n'est pas présent dans BNVD.
+
+###Effectif des tous les produits dans EPHY avec ceux de GTC et Usage professionnel 
+```{r, include=FALSE}
+load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
+n1=length(unique(EPHY$AMM))
+n2=length(unique(EPHY[EPHY$Gamme.d.usages%in%"Professionnel",]$AMM))
+n3=length(unique(EPHY[EPHY$Filiere%in%"Grandes cultures",]$AMM))
+n4=length(unique(EPHY[EPHY$Filiere%in%"Traitements généraux toutes cultures",]$AMM))
+
+df5 <- data.frame(Total = n1, UsagePro = n2, GC = n3 , TC = n4)
 ```
 
 ```{r}
-load(file.path(dataFolder,"donnees_R","BNVD","Table_Distribution.rda"))
+df5
+```
+
+###Distribution des produits dans EPHY, BNVD et PK
+```{r, include=FALSE}
+df6<- table(Table_Correspondance$EPHY,Table_Correspondance$BNVD,Table_Correspondance$PK)
+df6<-as.data.frame(df6)
+df6<- ChangeNameCol(df6,list("Var1","Var2","Var3"),list("EPHY","BNVD","PK"))
+df6<-t(df6)
+df6<-as.data.frame(df6)
+```
+
+```{r,,rows.print=8}
+df6
+```
+###Répartition des produits présents ou pas dans EPHY, BNVD et PK
+```{r, include=FALSE}
+d<-t(df6)
+d<-as.data.frame(d)
+d$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
+d$barplot<- as.factor(d$barplot)
+d$Freq<-as.numeric(levels(d$Freq))
+
+oind <- order(as.numeric(by(-(d$Freq), d$barplot, median)))    
+d$barplot <- ordered(d$barplot, levels=levels(d$barplot)[oind]) 
+p <- plot_ly(d,
+  x = ~barplot,
+  y = ~Freq,
+  name = "Effectif",
+  type = "bar"
+)
 ```
 
 ```{r}
-head(Table_Distribution)
+p
 ```
+###Présence des produits, cultures dans EPHY et PK
+```{r}
+load(file.path(dataFolder,"donnees_R","EPHY","CorrespondanceEphyPk.rda"))
+```
+
+```{r}
+CorrespondanceEphyPk
+```
+
+###Distribution des produits dans EPHY, Grands, tous cultures et usage professionnel, BNVD et PK avec filtration par catégories
+```{r, include=FALSE}
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Table_Distribution.rda"))
+```
+
+```{r}
+Table_Distribution
+```
+
+
+###Répartition des produits présents ou pas dans EPHY (Grands, tous cultures et usage professionnel), BNVD et PK par catégorie
+```{r, include=FALSE}
+dat<-Table_Distribution
+dat$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
+p <- plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
+  add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
+   add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
+   add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
+   add_trace(y = ~Acaricide.Freq, name = 'Acaricide') %>%
+   add_trace(y = ~Taupicide.Freq, name = 'Taupicide') %>%
+   
+   add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
+   add_trace(y = ~Dévitalisation.Freq, name = 'Dévitalisation') %>%
+   add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
+   add_trace(y = ~Nématicide.Freq, name = 'Nématicide') %>%
+   add_trace(y = ~Stimulateur.des.défenses.naturelles.Freq, name = 'Stimulateur.des.défenses.naturelles') %>%
+  layout(yaxis = list(title = 'Count'), barmode = 'stack')
+```
+
+```{r}
+p
+```
+
+###Répartition des produits présents ou pas dans PK par catégorie
 
 ```{r, include=FALSE}
 dat<-Table_Distribution
-dat$barplot<-c("TFF","TTF","TFT","TTT")
-dat<-dat[dat$barplot%in%c("TTF","TTT"),]
+dat$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
+dat<-dat[dat$barplot%in%c("EB-","EBP"),]
 
-p <- plot_ly(dat, x = ~barplot, y = ~Acaricide.Freq, type = 'bar', name = 'Acaricide') %>%
-  add_trace(y = ~Fongicide.Freq, name = 'Fongicide') %>%
-  add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
-  add_trace(y = ~Stimul..Déf..Naturelles.Freq, name = 'Stimul..Déf..Naturelles') %>%
-  add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
-  add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
+p <- plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
   add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
-  add_trace(y = ~Nématicide.Freq, name = 'Nématicide') %>%
-  add_trace(y = ~Stimulateur.des.défenses.naturelles.Freq, name = 'Stimulateur.des.défenses.naturelles') %>%
-  add_trace(y = ~Dévitalisation.Freq, name = 'Dévitalisation') %>%
-  add_trace(y = ~Taupicide.Freq, name = 'Taupicide') %>%
-  add_trace(y = ~Rodenticide.Freq, name = 'Rodenticide.Freq') %>%
-  add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
+   add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
+   add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
+   add_trace(y = ~Acaricide.Freq, name = 'Acaricide') %>%
+   add_trace(y = ~Taupicide.Freq, name = 'Taupicide') %>%
+   
+   add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
+   add_trace(y = ~Dévitalisation.Freq, name = 'Dévitalisation') %>%
+   add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
+   add_trace(y = ~Nématicide.Freq, name = 'Nématicide') %>%
+   add_trace(y = ~Stimulateur.des.défenses.naturelles.Freq, name = 'Stimulateur.des.défenses.naturelles') %>%
   layout(yaxis = list(title = 'Count'), barmode = 'stack')
+
+```
+
+```{r}
+p
+```
+###Répartition des produits présents ou pas dans EPHY, BNVD, PK en se basant sur le volume BNVD
+
+```{r, include=FALSE}
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","DistribustionVolume.rda"))
+
+Dist<- aggregate(QBNVD~T_F+Fonction, data = DistribustionVolume, sum)
+Dist_Cast<-dcast(Dist, T_F~Fonction)
+
+```
+
+```{r}
+DistribustionVolume
+```
+
+```{r, include=FALSE}
+
+p <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+  add_trace(y = ~Fongicide, name = 'Fongicide') %>%
+  add_trace(y = ~Insecticide, name = 'Insecticide') %>%
+  add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
+  add_trace(y = ~Acaricide, name = 'Acaricide') %>%
+  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
+  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  
+  layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 
 ```
 
