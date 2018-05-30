@@ -268,18 +268,17 @@ T_F<-dfCorrespondanceGTC %>%
   })
 T_F<- data.frame(do.call(rbind,T_F))
 T_F$AMM=rownames(T_F)
-DistribustionVolume<-merge(T_F, dfCorrespondanceGTC, by="AMM")
-DistribustionVolume<- ChangeNameCol(DistribustionVolume,"do.call.rbind..T_F.","T_F")
-
+distributionVolume<-merge(T_F, dfCorrespondanceGTC, by="AMM")
+distributionVolume<- ChangeNameCol(distributionVolume,"do.call.rbind..T_F.","T_F")
 
 #Volume BNVD
 QBNVD<-aggregate(BNVD$`Quantite produit`~AMM, data = BNVD, sum)
 QBNVD <- ChangeNameCol(QBNVD,"BNVD$`Quantite produit`","QBNVD")
 
 
-DistribustionVolume<-merge(DistribustionVolume,QBNVD, by="AMM",all.x = TRUE)
+distributionVolume<-merge(distributionVolume,QBNVD, by="AMM",all.x = TRUE)
 
-Dist<- aggregate(QBNVD~T_F+Fonction, data = DistribustionVolume, sum)
+Dist<- aggregate(QBNVD~T_F+Fonction, data = distributionVolume, sum)
 Dist_Cast<-dcast(Dist, T_F~Fonction)
 
 p <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
@@ -293,7 +292,7 @@ p <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicid
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 
 
-saveAs(DistribustionVolume,"DistribustionVolume",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
+saveAs(distributionVolume,"distributionVolume",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
 colnames(intituleCulture)<-c("culture","betterave","ble_dur","ble_tendre","canne_a_s","colza","mais_ens","mais_gr",
