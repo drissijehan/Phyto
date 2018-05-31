@@ -1,17 +1,16 @@
+dataFolder <- "~/data"
 library(readr)
 library(readxl)
 library(stringr)
 library(testthat)
+library(sp)
 options(stringsAsFactors = FALSE)
-load("AGRESTE_2014.rda")
+load(file.path(dataFolder,"donnees_R/Agreste/AGRESTE_2014.rda"))
 #pk_2014 <- read_delim("carto_init/enquetePhyto/dose2014.csv",    ";", escape_double = FALSE, trim_ws = TRUE)
 #pk_2011 Remy
 #pk<- rbind(pk_2011, pk_2014)
-
-dataFolder <- "~/data"
 pk <- read_delim(file.path(dataFolder,"carto_init/enquetePhyto/dose2014.csv"),
                  ";", escape_double = FALSE, trim_ws = TRUE)
-
 load(file.path(dataFolder,"Rpackages/r-package-frenchlandscape/frenchLandscape/data/frenchDepartements.rda"))
 
 # DONNEES DEPARTEMENT
@@ -20,7 +19,7 @@ v<-data.frame(CODE_DEPT="00",CODE_REG="00",NOM_REG="FR")
 dpt<-rbind(dpt, v)
 dpt$NOM_REG<- str_replace_all(dpt$NOM_REG,"-"," ")
 
-# elimination des lignes pour lesquelles la taille d'échantillons est trop restreinte (<3)
+# elimination des lignes pour lesquelles la taille d'?chantillons est trop restreinte (<3)
 pk<- na.omit(pk)
 
 # elimination guadeloupe/a
@@ -41,9 +40,11 @@ expect_equal(length(which(is.na(pk$CODE_REG))),0)
 pk$REGPAR <- NULL
 
 # INTEGRATION SURFACE DANS PK
-expect_true(!any(duplicated(AGRESTE_2014[,c("CODE_REG","ESPECE")])))
+Area <- aggregate(AGRESTE_2014$Area,by=list(AGRESTE_2014$ESPECE,AGRESTE_2014$CODE_REG),FUN=sum)
+colnames(Area) <- colnames(AGRESTE_2014)
+expect_true(!any(duplicated(Area[,c("CODE_REG","ESPECE")])))
 nRowInit <- nrow(pk)
-pk <- merge(pk,AGRESTE_2014,by=c("ESPECE","CODE_REG"))
+pk <- merge(pk,Area,by=c("ESPECE","CODE_REG"))
 expect_equal(nrow(pk),nRowInit)
 
 #Quantite pk
@@ -55,4 +56,3 @@ expect_equal(length(which(is.na(pk$freq))),0)
 pk$quantite_pk <- with(pk,mean*freq*Area)
 
 save(pk,file =file.path(dataFolder,"donnees_R","PK","pk2014.rda"))
-
