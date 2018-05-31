@@ -13,6 +13,15 @@ pk <- read_delim(file.path(dataFolder,"carto_init/enquetePhyto/dose2014.csv"),
                  ";", escape_double = FALSE, trim_ws = TRUE)
 load(file.path(dataFolder,"Rpackages/r-package-frenchlandscape/frenchLandscape/data/frenchDepartements.rda"))
 
+##From character to numeric
+eliminerVirgule<-function(df,...){ 
+  df.list<-lapply(df,function(x){ 
+    x<-as.numeric(gsub(",",".",x))
+  }) 
+  df.new<-do.call("data.frame",df.list) 
+  return(df.new) 
+} 
+pk<-data.frame(pk[1:5], eliminerVirgule(pk[,6:15]), pk[,16] )
 # DONNEES DEPARTEMENT
 dpt <- subset(frenchDepartements@data,select = c(CODE_DEPT, CODE_REG, NOM_REG ))
 v<-data.frame(CODE_DEPT="00",CODE_REG="00",NOM_REG="FR")
@@ -39,6 +48,7 @@ expect_equal(length(which(is.na(pk$CODE_REG))),0)
 
 pk$REGPAR <- NULL
 
+
 # INTEGRATION SURFACE DANS PK
 Area <- aggregate(AGRESTE_2014$Area,by=list(AGRESTE_2014$ESPECE,AGRESTE_2014$CODE_REG),FUN=sum)
 colnames(Area) <- colnames(AGRESTE_2014)
@@ -48,8 +58,6 @@ pk <- merge(pk,Area,by=c("ESPECE","CODE_REG"))
 expect_equal(nrow(pk),nRowInit)
 
 #Quantite pk
-pk$mean<-as.numeric(gsub(",",".",pk$mean))
-pk$freq<-as.numeric(gsub(",",".",pk$freq))
 expect_equal(length(which(is.na(pk$mean))),0)
 expect_equal(length(which(is.na(pk$freq))),0)
 
