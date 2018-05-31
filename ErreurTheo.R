@@ -13,8 +13,8 @@ QPK<-aggregate(quantite_pk~PHYTOPROD+ESPECE+CODE_REG,data= pk, sum)
 Surface<-aggregate(Area~ESPECE+CODE_REG, data = pk, sum)
 BasePK<-join(QPK,Surface)
 BasePK$DosePK<-BasePK$quantite_pk/BasePK$Area
-SommeDosePK<- aggregate(DosePK~ESPECE, data= BasePK, sum)
-BasePK<-merge(BasePK, SommeDosePK, by="ESPECE")
+SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
+BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
 BasePK$CoefBasePK<-BasePK$DosePK.x/BasePK$DosePK.y
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
@@ -22,8 +22,8 @@ culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(
 EPHY <- cbind(EPHY,culture)
 EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
-SommeDHCulture<-aggregate(Dose.d.application.retenue~ESPECE,data = DHCulture,sum)
-BaseDH<-merge(DHCulture, SommeDHCulture, by="ESPECE")
+SommeDHCulture<-aggregate(Dose.d.application.retenue~AMM,data = DHCulture,sum)
+BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
 BaseDH$CoefDH<-BaseDH$Dose.d.application.retenue.x/BaseDH$Dose.d.application.retenue.y
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"))
@@ -40,8 +40,8 @@ QPKN<-aggregate(quantite_pk~PHYTOPROD+ESPECE,data= pk, sum)
 SurfaceN<-aggregate(Area~ESPECE, data = pk, sum)
 BasePKN<-join(QPKN,SurfaceN)
 BasePKN$DosePKN<-BasePKN$quantite_pk/BasePKN$Area
-SommeDosePKN<- aggregate(DosePKN~ESPECE, data= BasePKN, sum)
-BasePKN<-merge(BasePKN, SommeDosePKN, by="ESPECE")
+SommeDosePKN<- aggregate(DosePKN~PHYTOPROD, data= BasePKN, sum)
+BasePKN<-merge(BasePKN, SommeDosePKN, by="PHYTOPROD")
 BasePKN$CoefBasePKN<-BasePKN$DosePKN.x/BasePKN$DosePKN.y
 BasePKN <- ChangeNameCol(BasePKN,"PHYTOPROD","AMM")
 ##CoefPK (produit, culture, region)
