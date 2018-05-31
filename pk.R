@@ -63,4 +63,4 @@ expect_equal(length(which(is.na(pk$freq))),0)
 
 pk$quantite_pk <- with(pk,mean*freq*Area)
 
-save(pk,file =file.path(dataFolder,"donnees_R","PK","pk2014.rda"))
+save(pk,file =file.path(dataFolder,"donnees_R","PK","PK.rda"))
