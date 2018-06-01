@@ -1,6 +1,13 @@
 dataFolder <- "~/data"
 folderOut <- file.path(dataFolder,"donnees_R","bnvdAcheteur")
 load(file.path(dataFolder,"donnees_R","bnvdAcheteur","BNVD.rda"))
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","BNVD_2014.rda"))
+load(file.path(dataFolder,"donnees_R","PK","pk.rda"))
+load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
+names(BNVD) <- iconv(names(BNVD),to="ASCII//TRANSLIT")
+names(BNVD_2014) <- iconv(names(BNVD_2014),to="ASCII//TRANSLIT")
+
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Composition_par_pdt_subs.rda"))
 library("DataManagement")
 library(plotly)
 library(testthat)
@@ -8,61 +15,7 @@ library(dplyr)
 library(plyr)
 library(Hmisc)
 library(reshape2)
-
 names(BNVD) <- iconv(names(BNVD),to="ASCII//TRANSLIT")
-
-#Table de composition à partir de la BNVD
-df<-aggregate(cbind(Qproduit=BNVD[,5], QSA=BNVD[,11]) ~ AMM+Annee_BNVD+BNVD$`Code postal acheteur` +Substance, data = BNVD, sum)
-df$Concentration<- df$QSA / df$Qproduit
-names(df)[3]<-"CP"
-
-saveAs(df,"Table_Composition",folderOut)
-
-#Histogramme Rapport sd/mean (concentration)
-df_mean<- aggregate(Concentration~AMM+Substance, data = df, mean, na.rm=TRUE)
-df_mean <- ChangeNameCol(df_mean,"Concentration","Mean")
-df_sd<- aggregate(Concentration~AMM+Substance, data = df, sd, na.rm=TRUE)
-df_sd <- ChangeNameCol(df_sd,"Concentration","Sd")
-df2<- merge(df_mean,df_sd,by=c("AMM","Substance"))
-df2$CoefVar <- df2$Sd / df2$Mean
-#-> seulement 18 consituants répartis sur 10 produits avec un problème (coefficient de variation > 0.1), dans tous les cas inférieur à 2
-#   problème mineur donc, la médiane devrait être un excellent reflet des concentrations
-
-pbConcentrations <- df2[which(df2$CoefVar>0.1),]
-length(unique(pbConcentrations$AMM))
-
-BNVDpb <- BNVD[which(BNVD$AMM %in% pbConcentrations$AMM),]
-QpbConcentrations <- aggregate(BNVDpb[,"Quantite produit"],by=list(BNVDpb$AMM),sum)
-sum(QpbConcentrations$x/ sum(BNVD$`Quantite produit`))
-#=> 5/10000 on verra plus tard
-
-plot_ly(df2, x = ~ CoefVar, type = "histogram", text = ~paste("AMM:", AMM, "Substance:" , Substance)) 
-
-###Warning: Ignoring 481 observations###
-length(which(is.na(df2$CoefVar))) #->481
-length(which(is.na(df2$Sd))) #->438 Observations(AMM+Substance) where we have 1 row, So sd(..)==NA, So CoefVar==NA
-length(which(df2$Mean==0)) #->61 Mean==0 So CoefVar=Sd/Mean==NA
-length(intersect(which(df2$Mean==0),which(is.na(df2$Sd)))) #->18 Observations where they have Sd==NA and Mean==0 at the same time
-expect_equal(length(which(is.na(df2$CoefVar))),length(which(is.na(df2$Sd)))+length(which(df2$Mean==0))-length(intersect(which(df2$Mean==0),which(is.na(df2$Sd)))))
-
-#Composition fixer par produit et substance
-df3<-aggregate(Concentration~AMM+Substance, data= df, median)
- 
-saveAs(df3,"Composition_par_pdt_subs",folderOut)
-#####################################
-
-#Table de correspondances cultures dans Ephy et cultures dans PK
-##Fait par Remy script intituleCulture.R
-
-#####################################
-
-# Les bases sont tous de l'année 2014
-load(file.path(dataFolder,"donnees_R","bnvdAcheteur","BNVD_2014.rda"))
-load(file.path(dataFolder,"donnees_R","PK","pk2014.rda"))
-load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
-
-names(BNVD_2014) <- iconv(names(BNVD_2014),to="ASCII//TRANSLIT")
-
 
 
 ################################### Table de Correspondance
@@ -112,28 +65,28 @@ names(dfCorrespondance)<- c("AMM","EPHY","BNVD","PK")
 DH<- aggregate(Dose.d.application.retenue~AMM, data = EPHY, median)
 
 #Concatener les substances du meme AMM
-df3 <- data.frame(df3,newCol=paste(df3$Substance,df3$Concentration,sep=" "))
+df33 <- data.frame(Composition_par_pdt_subs,newCol=paste(Composition_par_pdt_subs$Substance,Composition_par_pdt_subs$Concentration,sep=" "))
 
-Composition<- df3 %>%
-       split(.$AMM) %>%
-       lapply(function(d){d=data.frame(d);paste0(levels(as.factor(as.vector(d[,"newCol"]))),collapse=" / ")})
+Composition<- df33 %>%
+  split(.$AMM) %>%
+  lapply(function(d){d=data.frame(d);paste0(levels(as.factor(as.vector(d[,"newCol"]))),collapse=" / ")})
 
 Composition<- data.frame(do.call(rbind,Composition))
 Composition$col=rownames(Composition)
 
 names(Composition)<-c("Composition","AMM")
 
-expect_equal(nrow(Composition),length(unique(df3$AMM)))
+expect_equal(nrow(Composition),length(unique(Composition_par_pdt_subs$AMM)))
 
 df4<-merge(dfCorrespondance,DH,by="AMM", all.x=TRUE)
 df4<-merge(df4,Composition,by="AMM", all.x=TRUE)
 
 expect_equal(which(!df4$BNVD),which(is.na(df4$Composition)))
-expect_equal(which(!df4$EPHY),which(is.na(df4$Dose.d.application.retenue)))
+#expect_equal(which(!df4$EPHY),which(is.na(df4$Dose.d.application.retenue)))
 #170 AMM sans Dose d'application retenue
+df4<- ChangeNameCol(df4,"Dose.d.application.retenue","DH")
 
-            
-saveAs(df4,"Table_Correspondance",folderOut)
+saveAs(df4,"Presence_EBP",folderOut)
 
 ##On ajoute les Categories
 ### SAuf que les categories ne se presentent que dans EPHY
@@ -141,7 +94,7 @@ saveAs(df4,"Table_Correspondance",folderOut)
 
 df44<-merge(df4,unique(EPHY[,c("AMM","Fonction")]), by= "AMM",all.x=TRUE)
 
-expect_equal(nrow(df4),nrow((df44)))
+#expect_equal(nrow(df4),nrow((df44)))
 #5346 - 5440 == -94 -> Les produits qui appartiennent à plus d'une categorie
 
 #On cherche les produits avec plus qu'une categorie
@@ -201,15 +154,15 @@ df66<-as.data.frame(df66)
 EPHY[EPHY$Fonction%in%"Stimul. Déf. Naturelles",]<-"Stimulateur des défenses naturelles"
 dfCorrespondanceGTC<-merge(dfCorrespondanceGTC,unique(EPHY[,c("AMM","Fonction")]), by= "AMM",all.x=TRUE)
 df666<- dfCorrespondanceGTC %>%
-     split(.$Fonction) %>%
-     lapply(function(d){d=data.frame(d);table(d$EPHY,d$BNVD,d$PK)})
+  split(.$Fonction) %>%
+  lapply(function(d){d=data.frame(d);table(d$EPHY,d$BNVD,d$PK)})
 df666<-as.data.frame(df666)
-df666<-df666[,c(1,2,3,4,8,12,16,20,24,28,32,36,40,44,48,52)]
+df666<-df666[,c(1,2,3,4,8,12,16,20,24,28,32,36,40,44,48)]
 
 df666<- ChangeNameCol(df666,list("Acaricide.Var1","Acaricide.Var2","Acaricide.Var3"),list("EPHY","BNVD","PK"))
 #df666<-t(df666)
 
-saveAs(df666,"Table_Distribution",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
+saveAs(df666,"Presence_EgtcBP",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
 
 #####################################################
 ##Barplot BNVD PK
@@ -220,7 +173,7 @@ dat<-dat[dat$barplot%in%c("TTF","TTT"),]
 p <- plot_ly(dat, x = ~barplot, y = ~Acaricide.Freq, type = 'bar', name = 'Acaricide') %>%
   add_trace(y = ~Fongicide.Freq, name = 'Fongicide') %>%
   add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
-  add_trace(y = ~Stimul..Déf..Naturelles.Freq, name = 'Stimul..Déf..Naturelles') %>%
+  
   add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
   add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
   add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
@@ -292,7 +245,8 @@ p <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicid
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 
 
-saveAs(distributionVolume,"distributionVolume",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
+saveAs(distributionVolume,"presence_EgtcBP_VolumeBnvd",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
+
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
 colnames(intituleCulture)<-c("culture","betterave","ble_dur","ble_tendre","canne_a_s","colza","mais_ens","mais_gr",
@@ -366,8 +320,8 @@ newlines <- rbind( c("ble tendre","Blé"),
                    c("mais ens","Jachères et cultures intermédiaires"), c("mais gr","Jachères et cultures intermédiaires"), 
                    c("orge","Jachères et cultures intermédiaires"), c("tournesol","Jachères et cultures intermédiaires"), 
                    c("triticale","Jachères et cultures intermédiaires")
-                  
-                   )
+                   
+)
 colnames(newlines)<-c("ESPECE","culture")
 indices <- c(4,11,20:30,7:9,8:10,10:20)
 CorrespondanceCultureEphyPk<-insertRows(CorrespondanceCultureEphyPk, newlines, indices)
@@ -393,18 +347,76 @@ b<-is.element(ALL$AMM,AmmEspeceEphy$AMM)
 correspondanceE<-cbind(a,b)
 c<-as.data.frame(c)
 colnames(correspondanceE)<-c("EspeceEphy","AmmEphy")
+inEPHY<-apply(correspondanceE, 1, function(x) {if(all(x==TRUE)){f<-TRUE}else{f<-FALSE}}) 
+inEPHY<-as.data.frame(inEPHY)
 
 aa<-is.element(ALL$ESPECE,AmmEspecePk$ESPECE)
 bb<-is.element(ALL$AMM,AmmEspecePk$AMM)
 correspondanceP<-cbind(aa,bb)
 correspondanceP<-as.data.frame(correspondanceP)
 colnames(correspondanceP)<-c("EspecePk","AmmPk")
+inPK<-apply(correspondanceP, 1, function(x) {if(all(x==TRUE)){ff<-TRUE}else{ff<-FALSE}}) 
+inPK<-as.data.frame(inPK)
 
-CorrespondanceEphyPk<-cbind(ALL,correspondanceE,correspondanceP)
+CorrespondanceEphyPk<-cbind(ALL,inEPHY,inPK)
 
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
 
 CorrespondanceEphyPk<- merge(CorrespondanceEphyPk, DHCulture, by=c("ESPECE","AMM"),all.x = TRUE)
-
+CorrespondanceEphyPk <- ChangeNameCol(CorrespondanceEphyPk,"Dose.d.application.retenue","DH")
 saveAs(CorrespondanceEphyPk,"CorrespondanceEphyPk",file.path(dataFolder,"donnees_R","EPHY"))
 
+#####################Barplot GC Usage Pro ###################
+GC<-subset(EPHY, EPHY$Filiere %in% "Grandes cultures")
+GC<-subset(GC, GC$Gamme.d.usages%in% c("Professionnel"))
+AMMGC<- unique(GC$AMM)
+gc<-c()
+correspondanceGC<-ALLAMM %>%
+  split(.$AMM) %>%
+  lapply(function(d){d=data.frame(d);
+  if(d$AMM %in% AMMGC){gc<-TRUE} else if (d$AMM %nin% AMMGC){gc<-FALSE}
+  })
+correspondanceGC<- data.frame(do.call(rbind,correspondanceGC))
+correspondanceGC$AMM=rownames(correspondanceGC)
+dfCorrespondanceGC<-merge(correspondanceGC,correspondanceBNVD, by="AMM")
+dfCorrespondanceGC<-merge(dfCorrespondanceGC,correspondancePK, by="AMM")
+names(dfCorrespondanceGC)<- c("AMM","EPHY","BNVD","PK")
+dfCorrespondanceGC<-merge(dfCorrespondanceGC,unique(EPHY[,c("AMM","Fonction")]), by= "AMM",all.x=TRUE)
+
+T_F_GC<-dfCorrespondanceGC %>%
+  split(.$AMM) %>%
+  lapply(function(d){d=data.frame(d);
+  if(all(d[,c("EPHY","BNVD","PK")] == c(TRUE,TRUE,TRUE))==TRUE){t_f_<-"EBP"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(TRUE,TRUE,FALSE))==TRUE){t_f_<-"EB-"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(TRUE,FALSE,FALSE))==TRUE){t_f_<-"E--"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,FALSE,FALSE))==TRUE){t_f_<-"---"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(TRUE,FALSE,TRUE))==TRUE){t_f_<-"E-P"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,FALSE,TRUE))==TRUE){t_f_<-"--P"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,TRUE,TRUE))==TRUE){t_f_<-"-BP"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,TRUE,FALSE))==TRUE){t_f_<-"-B-"}
+  })
+T_F_GC<- data.frame(do.call(rbind,T_F_GC))
+T_F_GC$AMM=rownames(T_F_GC)
+
+distributionVolumeGC<-merge(T_F_GC, dfCorrespondanceGC, by="AMM")
+distributionVolumeGC<- ChangeNameCol(distributionVolumeGC,"do.call.rbind..T_F_GC.","T_F")
+
+
+distributionVolumeGC<-merge(distributionVolumeGC,QBNVD, by="AMM",all.x = TRUE)
+
+DistGC<- aggregate(QBNVD~T_F+Fonction, data = distributionVolumeGC, sum)
+Dist_Cast_GC<-dcast(DistGC, T_F~Fonction)
+
+saveAs(distributionVolumeGC,"presence_EgtcBP_VolumeBnvdGC",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
+
+p <- plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+  add_trace(y = ~Fongicide, name = 'Fongicide') %>%
+  add_trace(y = ~Insecticide, name = 'Insecticide') %>%
+  add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
+  add_trace(y = ~Acaricide, name = 'Acaricide') %>%
+  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
+  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  add_trace(y = ~Nématicide, name = 'Nématicide') %>%
+  add_trace(y = ~Taupicide, name = 'Taupicide') %>%
+  layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
+p

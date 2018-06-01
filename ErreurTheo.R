@@ -51,3 +51,4 @@ BaseN$CoefPKN<-BaseN$CoefBasePKN/BaseN$CoefDH
 MaxCoefN<- aggregate(CoefPKN~AMM, data = BaseN, max)
 ##Hist
 plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) 
+

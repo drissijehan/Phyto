@@ -15,24 +15,32 @@ library(plotly)
 library(reshape2)
 
 ```
+***************
+#`Quelle fiabilité des concentrations de substances  `{style="color: #b00;"}
+#`dans les produits à partir des différents  `{style="color: #b00;"}
+#`enregistrements de vente dans la BNVD ? `{style="color: #b00;"}
+**************
 
-#Quelle fiabilité des concentrations de substances dans les produits à partir des différents enregistrements de vente dans la BNVD ? 
+*************
+##`La concentration de chaque produit pour chaque année,  `{style="color: #003ebb;"}  
+##`code postal et substance:  `{style="color: #003ebb;"}  
+*************
 
-##La concentration de chaque produit pour chaque année, code postal et substance:
+
 ```{r setup, include=FALSE}
-load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Table_Composition.rda"))
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","concentration_pdt_subs_annee_cp.rda"))
 ```
 
 ###Quantité produite et quantité des substances actives pour chaque produit par année, par code postal et par substance active
 ```{r,rows.print=7}
-Table_Composition
+concentration_pdt_subs_annee_cp
 ```
 
 
 ```{r , include=FALSE}
-df_mean<- aggregate(Concentration~AMM+Substance, data = Table_Composition, mean)
+df_mean<- aggregate(Concentration~AMM+Substance, data = concentration_pdt_subs_annee_cp, mean)
 df_mean <- ChangeNameCol(df_mean,"Concentration","Mean")
-df_sd<- aggregate(Concentration~AMM+Substance, data = Table_Composition, sd)
+df_sd<- aggregate(Concentration~AMM+Substance, data = concentration_pdt_subs_annee_cp, sd)
 df_sd <- ChangeNameCol(df_sd,"Concentration","Sd")
 df2<- merge(df_mean,df_sd,by=c("AMM","Substance"))
 df2$CoefVar <- df2$Sd / df2$Mean
@@ -46,33 +54,40 @@ df2
 
 ###Coefficient de Variation des concentrations de substance par produit dans la BNVD(Sd/Mean)
 ```{r, echo=FALSE}
-plot_ly(df2, x = ~ CoefVar, type = "histogram", text = ~paste("AMM:", AMM, "Substance:" , Substance)) 
+plot_ly(df2, x = ~ CoefVar, type = "histogram", text = ~paste("AMM:", AMM, "Substance:" , Substance))  %>%
+  layout(yaxis = list(type = "log"))
 ```
 
 On a **481** observations ignorées, ceci est expliqué par **438** observations où on a Sd==NA (une seule vente pour le couple AMM+Substance), et **61** observations où la moyenne est nulle donc le ratio NA. Enfin, **18** observations où Sd==NA et Mean==0. Alors, on trouve bien: **481=438+61-18**.
 
 Combien de produits avec un coefficient de variation supérieur à 10%.
-```{rentent 5/10000
+```{r}
 length(unique(df2[which(df2$CoefVar>0.1),]$AMM))
 ```
 Cela représente 5/10000 de la quantité totale de produit présente dans la BNVD. 
 
 ```{r, include=FALSE}
-load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Table_Correspondance.rda"))
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Presence_EBP.rda"))
 ```
+
+*************
+##`Distribution de tous les produits dans EPHY, BNVD et PK  `{style="color: #003ebb;"}  
+*************
+
+
 ###Table des présences des produits dans les bases BNVD, EPHY et PK avec DH mediane et composition 
 ```{r  rows.print=7, paged.print= TRUE}
-Table_Correspondance
+Presence_EBP
 ```
 
 Attention NA:
-      Dose Homologué == NA --> AMM n'est pas présent dans EPHY ou Dose Homologuée (Dose d'application retenue) est NA à la base dans EPHY.
-      Composition == NA --> AMM n'est pas présent dans BNVD (propriétés testées dans df.R).
+     *  Dose Homologué == NA --> AMM n'est pas présent dans EPHY ou Dose Homologuée (Dose d'application retenue) est NA à la base dans EPHY.
+     *  Composition == NA --> AMM n'est pas présent dans BNVD (propriétés testées dans df.R).
 
-###Distribution de tous les produits dans EPHY, BNVD et PK
-#### Table des effectifs
+
+### Table des effectifs
 ```{r, include=FALSE}
-df6<- table(PK=Table_Correspondance$PK,BNVD=Table_Correspondance$BNVD,EPHY=Table_Correspondance$EPHY)
+df6<- table(PK=Presence_EBP$PK,BNVD=Presence_EBP$BNVD,EPHY= Presence_EBP$EPHY)
 df6<-as.data.frame(df6)
 df6<-t(df6)
 df6<-as.data.frame(df6)
@@ -82,13 +97,13 @@ df6<-as.data.frame(df6)
 df6
 ```
 
-#### Histogramme des effectifs
+### Histogramme des effectifs
 ```{r, include=FALSE}
 d<-t(df6)
 d<-as.data.frame(d)
 d$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
 d$barplot<- as.factor(d$barplot)
-d$Freq<-as.numeric(levels(d$Freq))
+d[,"Freq"]<-as.numeric((d$Freq))
 
 oind <- order(as.numeric(by(-(d$Freq), d$barplot, median)))    
 d$barplot <- ordered(d$barplot, levels=levels(d$barplot)[oind]) 
@@ -112,6 +127,14 @@ Il y a 1822 produits présents dans EPHY mais pas utilisés, c'est compréhensible 
 Les 141 dans BNVD et PK sans être dans EPHY sont notamment des adjuvants (vérifié à la main). 
 
 En conclusion peu de produits sont présents dans les trois tables ($612/4399$), et notamment beaucoup de produits absents dans PK GC 2014. 
+
+
+***************
+#`Quelle est la fréquence à laquelle une culture  `{style="color: #b00;"}
+#`est mentionnée pour une AMM sans être mentionnée  `{style="color: #b00;"}
+#`pour cette culture dans PK ? `{style="color: #b00;"}
+**************
+
 
 ###Mention des cultures pour chaque produit dans EPHY et PK
 Union des lignes culture x produit dans Ephy et PK.
@@ -143,19 +166,24 @@ df5
 ```
 
 
-###Distribution des produits dans BNVD et PK, restreint aux produits GC ou TC, usage professionel dans EPHY
+*************
+##`Distribution des produits dans BNVD et PK, restreint aux  `{style="color: #003ebb;"}
+##`produits GC ou TC, usage professionel dans EPHY  `{style="color: #003ebb;"}
+*************
+
+
 ```{r, include=FALSE}
-load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Table_Distribution.rda"))
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Presence_EgtcBP.rda"))
 ```
 
 ```{r}
-Table_Distribution
+Presence_EgtcBP
 ```
 
 
 ###Répartition des produits présents ou pas dans EPHY (Grands, tous cultures et usage professionnel), BNVD et PK par catégorie
 ```{r, include=FALSE}
-dat<-Table_Distribution
+dat<-Presence_EgtcBP
 dat$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
 p <- plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
   add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
@@ -178,10 +206,13 @@ p
 
 Domination claire des Insecticides, Herbicides et fongicides, sans variation très nette des proportions entre les différentes classes de présence dans les bases, sauf pour les produits qui sont dans PK mais pas dans la BNBD (--P et E-P) où les autres types de produits sont sur-représentés (bizarre que ce soit simplement des erreurs d'entrée vu que ça touche spécifiquement les taupicides et bactéricides notamment.  
 
-###Répartition des produits présents ou pas dans PK par catégorie
+*************
+##`Répartition des produits présents ou pas dans PK par catégorie  `{style="color: #003ebb;"}
+*************
+
 
 ```{r, include=FALSE}
-dat<-Table_Distribution
+dat<-Presence_EgtcBP
 dat$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
 dat<-dat[dat$barplot%in%c("EB-","EBP"),]
 
@@ -207,18 +238,25 @@ p
 
 Ce qui manque principalement dans PK semble être des insecticides et des fongicides.
 
-###Répartition des produits présents ou pas dans EPHY, BNVD, PK en se basant sur le volume BNVD
+
+*************
+##`Répartition des produits présents ou pas dans EPHY,  `{style="color: #003ebb;"}  
+##`BNVD, PK en se basant sur le volume BNVD  `{style="color: #003ebb;"}
+*************
+
+
 
 ```{r, include=FALSE}
-load(file.path(dataFolder,"donnees_R","bnvdAcheteur","DistribustionVolume.rda"))
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","presence_EgtcBP_VolumeBnvd.rda"))
 
-Dist<- aggregate(QBNVD~T_F+Fonction, data = DistribustionVolume, sum)
+Dist<- aggregate(QBNVD~T_F+Fonction, data = presence_EgtcBP_VolumeBnvd, sum)
 Dist_Cast<-dcast(Dist, T_F~Fonction)
 
 ```
 
+
 ```{r}
-DistribustionVolume
+presence_EgtcBP_VolumeBnvd
 ```
 
 ```{r, include=FALSE}
@@ -255,3 +293,49 @@ En ce qui concerne la répartition des catégories de produits dans les bases. Les
 Proportions à revoir quand on aura que Ephy GC+TC
 
 Ajouter même graphique mais en se limitant aux produits qui ne sont documentés dans Ephy **que** pour GC et usage pro, pas TC ni autres cultures. 
+
+
+###Les Produits restreints de EPHY GC, TC et usage professionnel, BNVD et PK, et présents que dans BNVD :
+```{r, include=FALSE}
+AmmBNVD<-subset(presence_EgtcBP_VolumeBnvd, (presence_EgtcBP_VolumeBnvd$EPHY==FALSE)&(presence_EgtcBP_VolumeBnvd$BNVD==TRUE)&(presence_EgtcBP_VolumeBnvd$PK==FALSE))
+AmmBNVD<- AmmBNVD[order(-AmmBNVD$QBNVD),] 
+
+```
+
+```{r}
+AmmBNVD
+```
+
+
+*************
+##`Répartition des produits présents ou pas dans EPHY GC  `{style="color: #003ebb;"}  
+##`et Usage Professionnel, BNVD, PK en se basant sur le  `{style="color: #003ebb;"}  
+##`volume BNVD  `{style="color: #003ebb;"}  
+*************
+
+
+###Répartition des produits présents ou pas dans EPHY GC et Usage Professionnel, BNVD, PK en se basant sur le volume BNVD
+```{r, include=FALSE}
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","presence_EgcBP_VolumeBnvdGC.rda"))
+DistGC<- aggregate(QBNVD~T_F+Fonction, data = presence_EgcBP_VolumeBnvdGC, sum)
+Dist_Cast_GC<-dcast(DistGC, T_F~Fonction)
+```
+
+
+
+```{r}
+Dist_Cast
+```
+
+```{r}
+ plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+  add_trace(y = ~Fongicide, name = 'Fongicide') %>%
+  add_trace(y = ~Insecticide, name = 'Insecticide') %>%
+  add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
+  add_trace(y = ~Acaricide, name = 'Acaricide') %>%
+  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
+  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  
+  layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
+```
+
