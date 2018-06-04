@@ -273,11 +273,7 @@ presence_EgtcBP_VolumeBnvd
 
 ```{r}
 
-<<<<<<< HEAD
-pp <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
-=======
 plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
->>>>>>> b1071584368b736ca4b42fee25dc8089a183a7d0
   add_trace(y = ~Fongicide, name = 'Fongicide') %>%
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
@@ -288,26 +284,15 @@ plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %
 
 ```
 
-<<<<<<< HEAD
-```{r}
-pp
-```
-
-Warnings: correspond aux observations pour lesquelles il n'y a pas de volumes parce qu'ils ne sont pas dans la BNVD (explique barres manquantes, vérifier pq certaines barres vraiment manquantes et d'autres à zéro). 
-
-*Conclusion:*  
-  PK GC documente la majorité des quantité vendues étiquetées GC ou TC dans ephy, malgré les manques importants soulignés précédemment. Cela signifie que les utilisations de produits en grandes cultures sont dominantes dans les ventes (`ratio (-BP+EBP)/total`). Mais une part non négligeable `ratio (-B- + -BP)/(total)`) de produit est vendue sans être dans EPHY (adjuvants, etc.? bizarre quand même que la catégorie soit documentée, en tout cas fongicides très sur représentés, explorer ce que ça représente car c'est presque la moitié des fongicides) et une autre part importante (`ratio (EB-)/total`) est probablement utilisée ailleurs qu'en grandes cultures. 
-=======
 
 
 Warnings: correspond aux observations pour lesquelles il n'y a pas de volumes parce qu'ils ne sont pas dans la BNVD (explique barres manquantes, vérifier pq certaines barres vraiment manquantes et d'autres à zéro). 
 
 Conclusion: PK GC documente la majorité des quantité vendues étiquetées GC ou TC dans ephy, malgré les manques importants soulignés précédemment. Cela signifie que les utilisations de produits en grandes cultures sont dominantes dans les ventes (`ratio (-BP+EBP)/total`). Mais une part non négligeable `ratio (-B- + -BP)/(total)`) de produit est vendue sans être dans EPHY (adjuvants, etc.? bizarre quand même que la catégorie soit documentée, en tout cas fongicides très sur représentés, explorer ce que ça représente car c'est presque la moitié des fongicides) et une autre part importante (`ratio (EB-)/total`) est probablement utilisée ailleurs qu'en grandes cultures. 
->>>>>>> b1071584368b736ca4b42fee25dc8089a183a7d0
 
 Pour le vérifier on pose la question suivante :
 
-*Q:* Y-a-t il des produits GC ou TC, usage pro, dans Ephy dont les ventes sont importantes sans être documentées dans PK? 
+Q: Y-a-t il des produits GC ou TC, usage pro, dans Ephy dont les ventes sont importantes sans être documentées dans PK? 
 
 Ajouter même graphique mais en gardant tous les produits qui ne sont pas GC ou TC dans Ephy (même si on perd encore des barres). (mettre ce graph en premier).
 Ajouter ratio de la nouvelle barre EB- par rapport à (EB- + EBP): le ratio des quantités vendus à priori sur grandes cultures qui ne sont pas documentées dans PK. Voir ajouter aussi ce ratio en se restreingnant à GC et usage pro (pas TC). 
@@ -351,26 +336,16 @@ Dist_Cast_GC<-dcast(DistGC, T_F~Fonction)
 Dist_Cast
 ```
 
-<<<<<<< HEAD
-```{r, include=FALSE}
-p <- plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
-=======
 ###EPHY GC en se basant sur volume BNVD
 ```{r, warning=FALSE}
  plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
->>>>>>> b1071584368b736ca4b42fee25dc8089a183a7d0
   add_trace(y = ~Fongicide, name = 'Fongicide') %>%
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
   add_trace(y = ~Acaricide, name = 'Acaricide') %>%
   add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
   add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
-  add_trace(y = ~Nématicide, name = 'Nématicide') %>%
-  add_trace(y = ~Taupicide, name = 'Taupicide') %>%
+  
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
-```
-
-```{r}
-p
 ```
 
