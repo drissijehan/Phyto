@@ -126,7 +126,7 @@ Il y a 1822 produits présents dans EPHY mais pas utilisés, c'est compréhensible 
 22 produits dans EPHY et PK mais pas dans BNVD, peut-être des erreurs de saisies dans PK qui seraient des adjuvants donc pas dans EPHY (à véririfier?). 
 Les 141 dans BNVD et PK sans être dans EPHY sont notamment des adjuvants (vérifié à la main). 
 
-En conclusion peu de produits sont présents dans les trois tables ($612/4399$), et notamment beaucoup de produits absents dans PK GC 2014. 
+En conclusion peu de produits sont présents dans les trois tables (`612/4399`), et notamment beaucoup de produits absents dans PK GC 2014. 
 
 
 ***************
@@ -182,26 +182,21 @@ Presence_EgtcBP
 
 
 ###Répartition des produits présents ou pas dans EPHY (Grands, tous cultures et usage professionnel), BNVD et PK par catégorie
-```{r, include=FALSE}
+```{r}
 dat<-Presence_EgtcBP
 dat$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
-p <- plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
+plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
   add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
    add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
    add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
    add_trace(y = ~Acaricide.Freq, name = 'Acaricide') %>%
    add_trace(y = ~Taupicide.Freq, name = 'Taupicide') %>%
-   
    add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
    add_trace(y = ~Dévitalisation.Freq, name = 'Dévitalisation') %>%
    add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
    add_trace(y = ~Nématicide.Freq, name = 'Nématicide') %>%
    add_trace(y = ~Stimulateur.des.défenses.naturelles.Freq, name = 'Stimulateur.des.défenses.naturelles') %>%
   layout(yaxis = list(title = 'Count'), barmode = 'stack')
-```
-
-```{r}
-p
 ```
 
 Domination claire des Insecticides, Herbicides et fongicides, sans variation très nette des proportions entre les différentes classes de présence dans les bases, sauf pour les produits qui sont dans PK mais pas dans la BNBD (--P et E-P) où les autres types de produits sont sur-représentés (bizarre que ce soit simplement des erreurs d'entrée vu que ça touche spécifiquement les taupicides et bactéricides notamment.  
@@ -210,13 +205,13 @@ Domination claire des Insecticides, Herbicides et fongicides, sans variation trè
 ##`Répartition des produits présents ou pas dans PK par catégorie  `{style="color: #003ebb;"}
 *************
 
-
-```{r, include=FALSE}
+###EPHY GC, TC et Usage Professionnel, en se bansant sur l'effectif des produits
+```{r}
 dat<-Presence_EgtcBP
 dat$barplot<-c("---","E--","-B-","EB-","--P","E-P","-BP","EBP")
 dat<-dat[dat$barplot%in%c("EB-","EBP"),]
 
-p <- plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
+plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide') %>%
   add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
    add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
    add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
@@ -232,9 +227,6 @@ p <- plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongi
 
 ```
 
-```{r}
-p
-```
 
 Ce qui manque principalement dans PK semble être des insecticides et des fongicides.
 
@@ -244,7 +236,27 @@ Ce qui manque principalement dans PK semble être des insecticides et des fongici
 ##`BNVD, PK en se basant sur le volume BNVD  `{style="color: #003ebb;"}
 *************
 
+###Toute la base EPHY, en se basant sur le volume BNVD
+```{r, include=FALSE}
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","presence_EBP_VolumeBnvd.rda"))
+DistEphy<- aggregate(QBNVD~T_F+Fonction, data = presence_EBP_VolumeBnvd, sum)
+Dist_Cast_EPHY<-dcast(DistEphy, T_F~Fonction)
 
+```
+```{r}
+plot_ly(Dist_Cast_EPHY, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+  add_trace(y = ~Fongicide, name = 'Fongicide') %>%
+  add_trace(y = ~Insecticide, name = 'Insecticide') %>%
+  add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
+  add_trace(y = ~Acaricide, name = 'Acaricide') %>%
+  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
+  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  
+  layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
+```
+
+
+###EPHY GC, TC et Usage Professionnel
 
 ```{r, include=FALSE}
 load(file.path(dataFolder,"donnees_R","bnvdAcheteur","presence_EgtcBP_VolumeBnvd.rda"))
@@ -259,20 +271,24 @@ Dist_Cast<-dcast(Dist, T_F~Fonction)
 presence_EgtcBP_VolumeBnvd
 ```
 
-```{r, include=FALSE}
+```{r}
 
+<<<<<<< HEAD
 pp <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+=======
+plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+>>>>>>> b1071584368b736ca4b42fee25dc8089a183a7d0
   add_trace(y = ~Fongicide, name = 'Fongicide') %>%
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
   add_trace(y = ~Acaricide, name = 'Acaricide') %>%
   add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
   add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
-  
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 
 ```
 
+<<<<<<< HEAD
 ```{r}
 pp
 ```
@@ -281,6 +297,13 @@ Warnings: correspond aux observations pour lesquelles il n'y a pas de volumes pa
 
 *Conclusion:*  
   PK GC documente la majorité des quantité vendues étiquetées GC ou TC dans ephy, malgré les manques importants soulignés précédemment. Cela signifie que les utilisations de produits en grandes cultures sont dominantes dans les ventes (`ratio (-BP+EBP)/total`). Mais une part non négligeable `ratio (-B- + -BP)/(total)`) de produit est vendue sans être dans EPHY (adjuvants, etc.? bizarre quand même que la catégorie soit documentée, en tout cas fongicides très sur représentés, explorer ce que ça représente car c'est presque la moitié des fongicides) et une autre part importante (`ratio (EB-)/total`) est probablement utilisée ailleurs qu'en grandes cultures. 
+=======
+
+
+Warnings: correspond aux observations pour lesquelles il n'y a pas de volumes parce qu'ils ne sont pas dans la BNVD (explique barres manquantes, vérifier pq certaines barres vraiment manquantes et d'autres à zéro). 
+
+Conclusion: PK GC documente la majorité des quantité vendues étiquetées GC ou TC dans ephy, malgré les manques importants soulignés précédemment. Cela signifie que les utilisations de produits en grandes cultures sont dominantes dans les ventes (`ratio (-BP+EBP)/total`). Mais une part non négligeable `ratio (-B- + -BP)/(total)`) de produit est vendue sans être dans EPHY (adjuvants, etc.? bizarre quand même que la catégorie soit documentée, en tout cas fongicides très sur représentés, explorer ce que ça représente car c'est presque la moitié des fongicides) et une autre part importante (`ratio (EB-)/total`) est probablement utilisée ailleurs qu'en grandes cultures. 
+>>>>>>> b1071584368b736ca4b42fee25dc8089a183a7d0
 
 Pour le vérifier on pose la question suivante :
 
@@ -328,8 +351,14 @@ Dist_Cast_GC<-dcast(DistGC, T_F~Fonction)
 Dist_Cast
 ```
 
+<<<<<<< HEAD
 ```{r, include=FALSE}
 p <- plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+=======
+###EPHY GC en se basant sur volume BNVD
+```{r, warning=FALSE}
+ plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+>>>>>>> b1071584368b736ca4b42fee25dc8089a183a7d0
   add_trace(y = ~Fongicide, name = 'Fongicide') %>%
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%

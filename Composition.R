@@ -56,10 +56,3 @@ saveAs(df3,"Composition_par_pdt_subs",folderOut)
 ##Fait par Remy script intituleCulture.R
 
 #####################################
-
-# Les bases sont tous de l'année 2014
-load(file.path(dataFolder,"donnees_R","bnvdAcheteur","BNVD_2014.rda"))
-load(file.path(dataFolder,"donnees_R","PK","pk2014.rda"))
-load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
-
-names(BNVD_2014) <- iconv(names(BNVD_2014),to="ASCII//TRANSLIT")

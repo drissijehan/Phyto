@@ -1,5 +1,6 @@
-
-source("persoData.R")
+dataFolder<-"~/data"
+folderOut <- file.path(dataFolder,"donnees_R","PK")
+#source("persoData.R")
 load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
 ## IFT PK
 EPHY_Reduit<- subset(EPHY, EPHY[,15]== c("L/ha","g/ha","kg/ha"))
@@ -23,8 +24,8 @@ Data_IFT_PK$IFT<- Data_IFT_PK$DoseMoy / Data_IFT_PK$Dose.d.application.retenue
 
 Data_IFT_PK<-merge(unique(Data_IFT_PK), unique(EPHY[,c(1,2,3)]),by.x= "PHYTOPROD", by.y="AMM")
 
-save(Data_IFT_PK,file ="Data_IFT_PK.rda")
 ######################################
 IFT_PK<- aggregate(IFT~ESPECE+Fonction+NOM_REG, Data_IFT_PK, sum)
 
-save(IFT_PK,file ="IFT_PK.rda")
+#save(IFT_PK,file ="IFT_PK.rda")
+saveAs(Data_IFT_PK,"Data_IFT_PK",folderOut)
