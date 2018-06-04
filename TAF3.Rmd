@@ -7,9 +7,15 @@ output:
     df_print: paged
 ---
 
+***************
+#`Quelle "erreur" dans spatialisation ODR classique  `{style="color: #b00;"}
+#`par rapport à la spatialisation basée sur PK ?  `{style="color: #b00;"}
+**************
+
+
 ```{r setup, include=FALSE}
-# dataFolder <- "~/data" # Jihane
-dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
+dataFolder <- "~/data" # Jihane
+#dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
 folderIn <- file.path(dataFolder,"donnees_R")
 folderOut <- file.path(dataFolder,"donnees_R","PK")
 load(file.path(folderIn,"PK","PK.rda"))
@@ -20,29 +26,14 @@ library("DataManagement")
 library(plotly)
 ```
 
-
+#Erreurs régionales
 ```{r, include=FALSE}
 #Erreurs régionales
 ##CofeBasePK (produit, culture, region)
-QPK<-aggregate(quantite_pk~PHYTOPROD+ESPECE+CODE_REG,data= pk, sum)
-Surface<-aggregate(Area~ESPECE+CODE_REG, data = pk, sum)
-BasePK<-join(QPK,Surface,by=c("CODE_REG","ESPECE"))
-
-BasePK$DosePK<-BasePK$quantite_pk/BasePK$Area
+BasePK<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
+BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
-SommeDosePK <- ChangeNameCol(SommeDosePK,"DosePK","DosePKToutesCultures")
-
-# visualisation de la disparité des dosesPK entre les différentes régions pour un AMM donné
-minDosePKRegionaux <- aggregate(SommeDosePK$DosePK,by=list(AMM=SommeDosePK$PHYTOPROD),min)
-minDosePKRegionaux <- ChangeNameCol(minDosePKRegionaux,"x","min")
-maxDosePKRegionaux <- aggregate(SommeDosePK$DosePK,by=list(AMM=SommeDosePK$PHYTOPROD),max)
-maxDosePKRegionaux <- ChangeNameCol(maxDosePKRegionaux,"x","max")
-dispDosePKRegionaux <- merge(minDosePKRegionaux,maxDosePKRegionaux,by="AMM")
-dispDosePKRegionaux$maxMinRatio <- dispDosePKRegionaux$max/dispDosePKRegionaux$min
-hist(dispDosePKRegionaux$maxMinRatio,breaks=100)
-#=> grosses disparités d'utilisation des produits sur l'ensemble des cultures suivant les régions d'après PK
-
-BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"),all.x=TRUE)
+BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
 BasePK$CoefBasePK<-BasePK$DosePK.x/BasePK$DosePK.y
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
@@ -50,8 +41,8 @@ culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(
 EPHY <- cbind(EPHY,culture)
 EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
-SommeDHCulture<-aggregate(Dose.d.application.retenue~ESPECE,data = DHCulture,sum)
-BaseDH<-merge(DHCulture, SommeDHCulture, by="ESPECE")
+SommeDHCulture<-aggregate(Dose.d.application.retenue~AMM,data = DHCulture,sum)
+BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
 BaseDH$CoefDH<-BaseDH$Dose.d.application.retenue.x/BaseDH$Dose.d.application.retenue.y
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"))
@@ -59,16 +50,16 @@ Base$CoefPK<-Base$CoefBasePK/Base$CoefDH
 ##Max (produit,region)
 MaxCoef<- aggregate(CoefPK~AMM+CODE_REG, data = Base, max)
 ```
-##Erreurs méthode DH vs coefficients PK à l'échelle régionale
-Quelle est la distribution des rapports des max_culture(coef_PK/coef_DH) ?
-
-Nota Bene: il y a `which(is.infinite(MaxCoef$CoefPK))` régions x AMM qui sont infinis, à comparer avec les 148 produits dans PK sans être dans Ephy à l'échelle nationale. Il est normal que l'on ait perdu des produits dans PK sans être dans Ephy car on est à l'échelle régionale et les règles de secret statistiques gènèrent des NA à l'échelle région x produit qu'il n'y a pas forcément à l'échelle nationale. 
 
 
 
 ```{r }
 Base
 ```
+##Erreurs méthode DH vs coefficients PK à l'échelle régionale
+Quelle est la distribution des rapports des max_culture(coef_PK/coef_DH) ?
+
+Nota Bene: il y a `which(is.infinite(MaxCoef$CoefPK))` régions x AMM qui sont infinis, à comparer avec les 148 produits dans PK sans être dans Ephy à l'échelle nationale. Il est normal que l'on ait perdu des produits dans PK sans être dans Ephy car on est à l'échelle régionale et les règles de secret statistiques gènèrent des NA à l'échelle région x produit qu'il n'y a pas forcément à l'échelle nationale. 
 
 ```{r}
 plot_ly(MaxCoef, x = ~ CoefPK, type = "histogram", text = ~paste("AMM:", AMM, "Region" , CODE_REG)) 
@@ -84,8 +75,8 @@ QPKN<-aggregate(quantite_pk~PHYTOPROD+ESPECE,data= pk, sum)
 SurfaceN<-aggregate(Area~ESPECE, data = pk, sum)
 BasePKN<-join(QPKN,SurfaceN)
 BasePKN$DosePKN<-BasePKN$quantite_pk/BasePKN$Area
-SommeDosePKN<- aggregate(DosePKN~ESPECE, data= BasePKN, sum)
-BasePKN<-merge(BasePKN, SommeDosePKN, by="ESPECE")
+SommeDosePKN<- aggregate(DosePKN~PHYTOPROD, data= BasePKN, sum)
+BasePKN<-merge(BasePKN, SommeDosePKN, by="PHYTOPROD")
 BasePKN$CoefBasePKN<-BasePKN$DosePKN.x/BasePKN$DosePKN.y
 BasePKN <- ChangeNameCol(BasePKN,"PHYTOPROD","AMM")
 ##CoefPK (produit, culture, region)
@@ -93,6 +84,8 @@ BaseN<-merge(BasePKN,BaseDH,by=c("AMM","ESPECE"))
 BaseN$CoefPKN<-BaseN$CoefBasePKN/BaseN$CoefDH
 ##Max (produit)
 MaxCoefN<- aggregate(CoefPKN~AMM, data = BaseN, max)
+##Hist
+plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) 
 ```
 
 ```{r}

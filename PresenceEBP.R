@@ -206,7 +206,7 @@ p <- plot_ly(df7, x = ~Fonction, y = ~EPHY, type = 'bar', name = 'EPHY', marker 
          barmode = 'group')
 
 
-############# Barplot Volume #############################
+############# Barplot Volume presence EPHY GC TC UP BNVD PK #############################
 T_F<-dfCorrespondanceGTC %>%
   split(.$AMM) %>%
   lapply(function(d){d=data.frame(d);
@@ -247,6 +247,43 @@ p <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicid
 
 saveAs(distributionVolume,"presence_EgtcBP_VolumeBnvd",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
 
+
+######################## Barplot Volume presence EPHY  BNVD PK ##############
+T_F_E<-Presence_EBP %>%
+  split(.$AMM) %>%
+  lapply(function(d){d=data.frame(d);
+  if(all(d[,c("EPHY","BNVD","PK")] == c(TRUE,TRUE,TRUE))==TRUE){t_f_<-"EBP"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(TRUE,TRUE,FALSE))==TRUE){t_f_<-"EB-"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(TRUE,FALSE,FALSE))==TRUE){t_f_<-"E--"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,FALSE,FALSE))==TRUE){t_f_<-"---"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(TRUE,FALSE,TRUE))==TRUE){t_f_<-"E-P"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,FALSE,TRUE))==TRUE){t_f_<-"--P"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,TRUE,TRUE))==TRUE){t_f_<-"-BP"}
+  else if (all(d[,c("EPHY","BNVD","PK")] == c(FALSE,TRUE,FALSE))==TRUE){t_f_<-"-B-"}
+  })
+T_F_E<- data.frame(do.call(rbind,T_F_E))
+T_F_E$AMM=rownames(T_F_E)
+distributionVolumeEphy<-merge(T_F_E, Presence_EBP, by="AMM")
+distributionVolumeEphy<- ChangeNameCol(distributionVolumeEphy,"do.call.rbind..T_F_E.","T_F")
+
+
+distributionVolumeEphy<-merge(distributionVolumeEphy,QBNVD, by="AMM",all.x = TRUE)
+distributionVolumeEphy<- merge(distributionVolumeEphy, unique(EPHY[,c("AMM","Fonction")]), by= "AMM")
+
+DistEphy<- aggregate(QBNVD~T_F+Fonction, data = distributionVolumeEphy, sum)
+Dist_Cast_EPHY<-dcast(DistEphy, T_F~Fonction)
+
+p <- plot_ly(Dist_Cast_EPHY, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %>%
+  add_trace(y = ~Fongicide, name = 'Fongicide') %>%
+  add_trace(y = ~Insecticide, name = 'Insecticide') %>%
+  add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
+  add_trace(y = ~Acaricide, name = 'Acaricide') %>%
+  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
+  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  
+  layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
+
+saveAs(distributionVolumeEphy,"presence_EBP_VolumeBnvd",file.path(dataFolder,"donnees_R","bnvdAcheteur"))
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
 colnames(intituleCulture)<-c("culture","betterave","ble_dur","ble_tendre","canne_a_s","colza","mais_ens","mais_gr",

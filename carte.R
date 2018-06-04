@@ -1,9 +1,13 @@
 #Carte Rapport bnvd pk
 library(stringr)
 library(sp)
+library(DataManagement)
 
-source("persoData.R") # dataFolder 
-load(file.path(dataFolder,"donnees_R","BNVD","BNVD_2014.rda"))
+dataFolder<-"~/data"
+folderOut <- file.path(dataFolder,"donnees_R","PK")
+#source("persoData.R") # dataFolder 
+load(file.path(dataFolder,"donnees_R","bnvdAcheteur","BNVD_2014.rda"))
+load("data/Rpackages/r-package-frenchlandscape/frenchLandscape/data/frenchDepartements.rda")
 
 #Calculer la quantite utilisée de chaque produit dans chaque region
 bnvd_reg<- aggregate(BNVD_2014[,5]~AMM+CODE_REG, data = BNVD_2014, sum)
@@ -22,12 +26,13 @@ bnvd_reg$rapport_bnvd_reg_pk<- bnvd_reg$quantite_bnvd_reg / bnvd_reg$quantite_pk
 carte<-aggregate(rapport_bnvd_reg_pk~CODE_REG, data = bnvd_reg[bnvd_reg$CODE_REG!="00",], median)
 # carte<- merge(carte, dpt[,1:2], by= "CODE_REG")
 
-carte<-merge(frenchLandscape::frenchDepartements, carte, by="CODE_REG", duplicateGeoms = FALSE)
+carte<-merge(frenchDepartements, carte, by="CODE_REG", duplicateGeoms = FALSE)
 
-save(carte,file ="carte.rda")
+saveAs(carte,"carte",folderOut)
 
 #Carte Equivalent Dose Pleine
 #CHERCHER EDP
+Dose_median<- aggregate(Dose.d.application.retenue~AMM, data = EPHY, median)
 EDP<- merge(bnvd_reg,Dose_median, by="AMM")
 EDP$edp <-round( (EDP$quantite_bnvd_reg / EDP$Dose.d.application.retenue)/10)
 
@@ -42,9 +47,9 @@ carte2<-aggregate(x~reg, data = carte2, median)
 carte2<- subset(carte2, reg!= "00")
 # carte2<- merge(carte2, dpt[,1:2], by.x="reg" , by.y="CODE_REG")
 
-carte2<-merge(frenchLandscape::frenchDepartements, carte2, by.x="CODE_REG",by.y="reg", duplicateGeoms = FALSE)
+carte2<-merge(frenchDepartements, carte2, by.x="CODE_REG",by.y="reg", duplicateGeoms = FALSE)
 
 spplot(carte2,"x")
 
-save(carte2,file ="carte2.rda")
+saveAs(carte2,"carte2",folderOut)
 

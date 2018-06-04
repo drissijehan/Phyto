@@ -9,10 +9,8 @@ library("DataManagement")
 library(plotly)
 #Erreurs régionales
 ##CofeBasePK (produit, culture, region)
-QPK<-aggregate(quantite_pk~PHYTOPROD+ESPECE+CODE_REG,data= pk, sum)
-Surface<-aggregate(Area~ESPECE+CODE_REG, data = pk, sum)
-BasePK<-join(QPK,Surface)
-BasePK$DosePK<-BasePK$quantite_pk/BasePK$Area
+BasePK<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
+BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
 BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
 BasePK$CoefBasePK<-BasePK$DosePK.x/BasePK$DosePK.y
