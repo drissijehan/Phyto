@@ -28,7 +28,7 @@ library(ggplot2)
 #Volume BNVD cohérent avec Pk ?
 ##Histogramme du rapport entre quantité BNVD et quantité PK
 ```{r, message=FALSE , warning=FALSE, fig.width=8, fig.height=7 , fig.align = "center"}
-plot_ly(x = ~ (quanti$rapport_bnvd_pk), type = "histogram")%>%
+plot_ly(quanti, x = ~ rapport_bnvd_pk, type = "histogram")%>%
   layout(title= "Histogramme Rapport Quantite BNVD/PK") %>%
   layout(yaxis = list(type = "log"))
 ```
@@ -69,12 +69,12 @@ add_lines(p,x=quanti$quantite_pk,y=quanti$quantite_pk)
 
 ##Repartition des substances BNVD et Pk 
 ```{r, message=FALSE , warning=FALSE, fig.width=12, fig.height=6 , fig.align = "center"}
-p=plot_ly(quanti_substance , x = ~Subs_pk , y = ~Subs_bnvd)%>%
+p=plot_ly(quanti_substance , x = ~Subs_pk.y , y = ~Subs_bnvd.y)%>%
     
-    add_markers(text = ~paste( 'Composition:', Composition,"<br>Categorie: ", Fonction, "<br>Produit: ", quanti$`Exemple de nom de produit` ),
+    add_markers(text = ~paste( 'Substance:', Substance,"<br>Categorie: ", Fonction ),
                 size = ~edp, color= ~Fonction , colors = "Set1"
     )
-add_lines(p,x=quanti_substance$Subs_pk,y=quanti_substance$Subs_pk)
+add_lines(p,x=quanti_substance$Subs_pk.y,y=quanti_substance$Subs_pk.y)
 ```
 
 #Indice de Frequence de Traitement IFT

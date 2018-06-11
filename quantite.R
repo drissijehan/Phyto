@@ -42,7 +42,7 @@ quanti$Fonction<-as.factor(quanti$Fonction)
 ## On va ajouter la dose homologuee a notre base pour le scatter plot 
 DH<-aggregate(Dose.d.application.retenue~AMM, EPHY, median)
 quanti<- merge(unique(quanti), unique(DH), by.x="PHYTOPROD", by.y="AMM")
-quanti$edp<- quanti$quantite_pk/ quanti$Dose.d.application.retenue
+quanti$edp<- quanti$quantite_bnvd/ quanti$Dose.d.application.retenue
 quanti<-merge(quanti,unique(BNVD_2014[,c("AMM","Exemple de nom de produit")]), by.x="PHYTOPROD",by.y="AMM")
 
 saveAs(quanti,"quanti",folderOut)
@@ -50,15 +50,16 @@ saveAs(quanti,"quanti",folderOut)
 
 #####Quantite de substance ##############
 #Substance BNVD
-SubsBnvd<-aggregate(BNVD_2014$`Quantite substance (Kg)`~BNVD_2014$AMM, data = BNVD_2014, sum)
-colnames(SubsBnvd) <- c("AMM","Subs_bnvd")
+SubsBnvd<-aggregate(BNVD_2014$`Quantite substance (Kg)`~BNVD_2014$Substance+BNVD_2014$AMM, data = BNVD_2014, sum)
+colnames(SubsBnvd) <- c("Substance","AMM","Subs_bnvd")
 #Substance PK
 load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Composition_par_pdt_subs.rda"))
-ConcBnvd<-aggregate(Concentration~AMM, data = Composition_par_pdt_subs, sum)
-SubsPk<- merge(quanti[,c("PHYTOPROD","quantite_pk")], ConcBnvd, by.x= "PHYTOPROD", by.y="AMM")
+SubsPk<- merge(unique(quanti[,c("PHYTOPROD","quantite_pk")]), Composition_par_pdt_subs, by.x= "PHYTOPROD", by.y="AMM")
+SubsPk<- ChangeNameCol(SubsPk,"PHYTOPROD","AMM")
+
 SubsPk$Subs_pk<- SubsPk$quantite_pk*SubsPk$Concentration
 
-quanti_substance<- merge(SubsBnvd, SubsPk, by.x="AMM", by.y="PHYTOPROD")
+quanti_substance<- merge(SubsBnvd, SubsPk, by=c("Substance","AMM"))
 
 #Ajouter les categories des produits
 quanti_substance<-merge(unique(quanti_substance), unique(EPHY[,c(2,3)]),by="AMM")
@@ -69,8 +70,7 @@ quanti_substance<- merge(unique(quanti_substance), unique(DH), by="AMM")
 quanti_substance$edp<- quanti_substance$quantite_pk/ quanti_substance$Dose.d.application.retenue
 quanti_substance<-merge(quanti_substance,unique(BNVD_2014[,c("AMM","Exemple de nom de produit")]),by="AMM")
 
-#Ajouter la composition (substance concentration)
-load("C:/Users/Utilisateur/Documents/data/donnees_R/bnvdAcheteur/Presence_EBP.rda")
-quanti_substance<- merge(quanti_substance,Presence_EBP[,c("AMM","Composition")])
+Subs<-aggregate(cbind(Subs_pk,Subs_bnvd)~Substance, data = quanti_substance, sum)
 
+quanti_substance<-merge(quanti_substance,Subs, by="Substance")
 saveAs(quanti_substance,"quanti_substance",folderOut)

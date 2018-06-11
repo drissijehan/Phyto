@@ -62,7 +62,8 @@ Quelle est la distribution des rapports des max_culture(coef_PK/coef_DH) ?
 Nota Bene: il y a `which(is.infinite(MaxCoef$CoefPK))` régions x AMM qui sont infinis, à comparer avec les 148 produits dans PK sans être dans Ephy à l'échelle nationale. Il est normal que l'on ait perdu des produits dans PK sans être dans Ephy car on est à l'échelle régionale et les règles de secret statistiques gènèrent des NA à l'échelle région x produit qu'il n'y a pas forcément à l'échelle nationale. 
 
 ```{r}
-plot_ly(MaxCoef, x = ~ CoefPK, type = "histogram", text = ~paste("AMM:", AMM, "Region" , CODE_REG)) 
+plot_ly(MaxCoef, x = ~ CoefPK, type = "histogram", text = ~paste("AMM:", AMM, "Region" , CODE_REG)) %>%
+  layout(yaxis = list(type = "log"))
 ```
 
 CoefPK: rapport maximum du coef PK / coef DH pour chaque AMM sur les différentes cultures.
@@ -93,6 +94,7 @@ BaseN
 ```
 
 ```{r}
-plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) 
+plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) %>%
+  layout(yaxis = list(type = "log"))
 ```
 

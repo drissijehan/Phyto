@@ -54,7 +54,7 @@ df2
 
 ###Coefficient de Variation des concentrations de substance par produit dans la BNVD(Sd/Mean)
 ```{r, echo=FALSE}
-plot_ly(df2, x = ~ CoefVar, type = "histogram", text = ~paste("AMM:", AMM, "Substance:" , Substance))  %>%
+plot_ly(df2, x = ~ CoefVar, type = "histogram")  %>%
   layout(yaxis = list(type = "log"))
 ```
 

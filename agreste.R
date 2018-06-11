@@ -1,6 +1,7 @@
 library("DataManagement")
 
 dataFolder <- "~/data"
+folderOut <- file.path(dataFolder,"donnees_R","Agreste")
 AGRESTE<- read_excel(file.path(dataFolder,"carto_init/Agreste/Agreste2000_2016.xlsx"), skip = 5)
 AGRESTE<-AGRESTE[,-match(c("Thème","Sous-thème"),names(AGRESTE))]
 
@@ -23,7 +24,7 @@ nColInit <- ncol(AGRESTE)
 AGRESTE <- aggregate(AGRESTE[,colAgg],by=list(CODE_REG=AGRESTE$CODE_REG,ESPECE=AGRESTE$ESPECE,NOM_REG=AGRESTE$NOM_REG),sum,na.rm=TRUE)
 expect_equal(ncol(AGRESTE),nColInit) # au cas où on ajoute des années, il faudrat penser à élargir
 
-save(AGRESTE,file ="AGRESTE.rda")
+save(AGRESTE,file =file.path(dataFolder,folderOut))
 
 
 #Agreste de l'annee 2014
@@ -35,4 +36,4 @@ fr<- cbind(fr, CODE_REG=rep("00", nrow(fr)))
 
 AGRESTE_2014 <- rbind(AGRESTE_2014, fr[,c("CODE_REG","ESPECE","Area")])
 
-save(AGRESTE_2014,file ="AGRESTE_2014.rda")
+save(AGRESTE_2014,file =file.path(dataFolder,folderOut))

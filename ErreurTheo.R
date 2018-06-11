@@ -7,46 +7,95 @@ load(file.path(folderIn,"EPHY","CorrespondanceCultureEphyPk.rda"))
 library(plyr)
 library("DataManagement")
 library(plotly)
+#Dans cette partie on a pas pris compte de la surface
 #Erreurs régionales
 ##CofeBasePK (produit, culture, region)
 BasePK<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
 BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
 BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
-BasePK$CoefBasePK<-BasePK$DosePK.x/BasePK$DosePK.y
+BasePK$CoefPK<-BasePK$DosePK.x/BasePK$DosePK.y
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
 culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
 EPHY <- cbind(EPHY,culture)
 EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
-SommeDHCulture<-aggregate(Dose.d.application.retenue~AMM,data = DHCulture,sum)
+DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
+SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum)
 BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
-BaseDH$CoefDH<-BaseDH$Dose.d.application.retenue.x/BaseDH$Dose.d.application.retenue.y
+BaseDH$CoefDH<-BaseDH$DH.x/BaseDH$DH.y
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"))
-Base$CoefPK<-Base$CoefBasePK/Base$CoefDH
+Base$Coef<-Base$CoefPK/Base$CoefDH
 ##Max (produit,region)
-MaxCoef<- aggregate(CoefPK~AMM+CODE_REG, data = Base, max)
+MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max)
 ##Hist
-plot_ly(MaxCoef, x = ~ CoefPK, type = "histogram", text = ~paste("AMM:", AMM, "Region" , CODE_REG)) 
+p1<-plot_ly(MaxCoef, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, "<br>Region" , CODE_REG),
+            name= "Erreurs Regionales à surface égale") %>%
+  layout(yaxis = list(type = "log"))
 
 
 #Erreurs nationale
 ##CofeBasePK (produit, culture)
-QPKN<-aggregate(quantite_pk~PHYTOPROD+ESPECE,data= pk, sum)
-SurfaceN<-aggregate(Area~ESPECE, data = pk, sum)
-BasePKN<-join(QPKN,SurfaceN)
-BasePKN$DosePKN<-BasePKN$quantite_pk/BasePKN$Area
-SommeDosePKN<- aggregate(DosePKN~PHYTOPROD, data= BasePKN, sum)
+BasePKN<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE, data= pk, sum)
+BasePKN$DosePK<-BasePKN$mean*BasePKN$freq
+SommeDosePKN<- aggregate(DosePK~PHYTOPROD, data= BasePKN, sum)
 BasePKN<-merge(BasePKN, SommeDosePKN, by="PHYTOPROD")
-BasePKN$CoefBasePKN<-BasePKN$DosePKN.x/BasePKN$DosePKN.y
+BasePKN$CoefPK<-BasePKN$DosePK.x/BasePKN$DosePK.y
 BasePKN <- ChangeNameCol(BasePKN,"PHYTOPROD","AMM")
 ##CoefPK (produit, culture, region)
 BaseN<-merge(BasePKN,BaseDH,by=c("AMM","ESPECE"))
-BaseN$CoefPKN<-BaseN$CoefBasePKN/BaseN$CoefDH
+BaseN$Coef<-BaseN$CoefPK/BaseN$CoefDH
 ##Max (produit)
-MaxCoefN<- aggregate(CoefPKN~AMM, data = BaseN, max)
+MaxCoefN<- aggregate(Coef~AMM, data = BaseN, max)
 ##Hist
-plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) 
+p2<-plot_ly(MaxCoefN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM),
+            name= "Erreurs Nationales à surface égale") %>%
+  layout(yaxis = list(type = "log"))
 
+
+#On inclut la surface
+#Erreurs regionales
+load(file.path(folderIn,"Agreste","AGRESTE_2014.rda"))
+#Erreurs régionales
+##CofeBasePK (produit, culture, region)
+BasePKS<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
+BasePKS$DosePK<-BasePKS$mean*BasePKS$freq
+BasePKS<-merge(BasePKS,AGRESTE_2014, by=c("ESPECE","CODE_REG"))
+SommeCulture<- aggregate(cbind(DosePK,Area)~PHYTOPROD+CODE_REG, data= BasePKS, sum)
+BasePKS<- merge(BasePKS, SommeCulture, by=c("PHYTOPROD","CODE_REG"))
+BasePKS$CoefPK<-BasePKS$DosePK.x/(BasePKS$DosePK.y*BasePKS$Area.y)
+BasePKS <- ChangeNameCol(BasePKS,"PHYTOPROD","AMM")
+BaseS<-merge(BasePKS,BaseDH,by=c("AMM","ESPECE"))
+BaseS$Coef<-BaseS$CoefPK/BaseS$CoefDH
+##Max (produit)
+MaxCoefS<- aggregate(Coef~AMM+CODE_REG, data = BaseS, max)
+##Hist
+p3<-plot_ly(MaxCoefS, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, "<br>Region" , CODE_REG), 
+            name= "Erreurs Regionales en tenant compte du surface") %>%
+  layout(yaxis = list(type = "log"))
+
+
+#Erreurs nationale
+##CofeBasePK (produit, culture)
+
+BasePKSN<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE, data= pk, sum)
+BasePKSN$DosePK<-BasePKSN$mean*BasePKSN$freq
+AgresteNational<-aggregate(Area~ESPECE, data = AGRESTE_2014, sum) ##Je suis pas sur d'aggreger les surfaces par culture!!!
+BasePKSN<-merge(BasePKSN,AgresteNational, by="ESPECE")
+SommeCultureSN<- aggregate(cbind(DosePK,Area)~PHYTOPROD, data= BasePKSN, sum)
+
+BasePKSN<- merge(BasePKSN, SommeCultureSN, by="PHYTOPROD")
+BasePKSN$CoefPK<-BasePKSN$DosePK.x/(BasePKSN$DosePK.y*BasePKSN$Area.y)
+BasePKSN <- ChangeNameCol(BasePKSN,"PHYTOPROD","AMM")
+BaseSN<-merge(BasePKSN,BaseDH,by=c("AMM","ESPECE"))
+BaseSN$Coef<-BaseSN$CoefPK/BaseSN$CoefDH
+##Max (produit)
+MaxCoefSN<- aggregate(Coef~AMM, data = BaseSN, max)
+##Hist
+p4<-plot_ly(MaxCoefSN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM),
+            name= "Erreurs Nationales en tenant compte du surface") %>%
+  layout(yaxis = list(type = "log"))
+
+p <- subplot(p1, p2, p3, p4)
