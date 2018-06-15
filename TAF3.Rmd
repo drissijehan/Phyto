@@ -14,8 +14,8 @@ output:
 
 
 ```{r setup, include=FALSE}
-dataFolder <- "~/data" # Jihane
-#dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
+# dataFolder <- "~/data" # Jihane
+dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
 folderIn <- file.path(dataFolder,"donnees_R")
 folderOut <- file.path(dataFolder,"donnees_R","PK")
 load(file.path(folderIn,"PK","PK.rda"))

@@ -1,4 +1,5 @@
-dataFolder <- "~/data"
+# dataFolder <- "~/data"
+dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
 folderIn <- file.path(dataFolder,"donnees_R")
 folderOut <- file.path(dataFolder,"donnees_R","PK")
 load(file.path(folderIn,"PK","PK.rda"))
@@ -15,6 +16,11 @@ BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
 SommeDosePK<- ChangeNameCol(SommeDosePK, "DosePK","SumDosePK")
 BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
+SommeDosePK[which(SommeDosePK$PHYTOPROD=="2000018"),]
+#=> en plus problème de région supplémentaire : 21 qui disparait ensuite dans Base
+BasePK[which(BasePK$AMM=="2000018"),]
+#=> c'est la betterave qui avait disparu pour 00
+
 BasePK$CoefPK<-BasePK$DosePK/BasePK$SumDosePK
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
@@ -28,8 +34,13 @@ SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DH","SumDH")
 BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
 BaseDH$CoefDH<-BaseDH$DH/BaseDH$SumDH
 ##CoefPK (produit, culture, region)
-Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"))
+Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"),all.x=TRUE)
 Base$Coef<-Base$CoefPK/Base$CoefDH
+
+# Pb: 
+Base[which(Base$AMM=="2000018"),]
+#=> somme pour région 00 pour blé et orge n'est pas égale à SumDosePK
+
 ##Max (produit,region)
 MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max)
 ##Hist
