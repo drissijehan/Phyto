@@ -40,6 +40,9 @@ Base$Coef<-Base$CoefPK/Base$CoefDH
 # Pb: 
 Base[which(Base$AMM=="2000018"),]
 #=> somme pour région 00 pour blé et orge n'est pas égale à SumDosePK
+table(Base[which(is.na(Base$DH)),"ESPECE"])
+#=> ca fait beaucoup, par exemple pour le colza, à étudier
+
 
 ##Max (produit,region)
 MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max)
