@@ -1,0 +1,198 @@
+18/06/11 13:49:05 INFO SparkContext: Running Spark version 2.1.0
+18/06/11 13:49:05 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+18/06/11 13:49:06 INFO SecurityManager: Changing view acls to: Utilisateur
+18/06/11 13:49:06 INFO SecurityManager: Changing modify acls to: Utilisateur
+18/06/11 13:49:06 INFO SecurityManager: Changing view acls groups to: 
+18/06/11 13:49:06 INFO SecurityManager: Changing modify acls groups to: 
+18/06/11 13:49:06 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(Utilisateur); groups with view permissions: Set(); users  with modify permissions: Set(Utilisateur); groups with modify permissions: Set()
+18/06/11 13:49:06 INFO Utils: Successfully started service 'sparkDriver' on port 51061.
+18/06/11 13:49:06 INFO SparkEnv: Registering MapOutputTracker
+18/06/11 13:49:06 INFO SparkEnv: Registering BlockManagerMaster
+18/06/11 13:49:06 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+18/06/11 13:49:06 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+18/06/11 13:49:06 INFO DiskBlockManager: Created local directory at C:\Users\Utilisateur\AppData\Local\Temp\blockmgr-87e2db36-0e2c-4bec-bb71-1a22e42fbb06
+18/06/11 13:49:06 INFO MemoryStore: MemoryStore started with capacity 413.9 MB
+18/06/11 13:49:06 INFO SparkEnv: Registering OutputCommitCoordinator
+18/06/11 13:49:06 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+18/06/11 13:49:06 INFO SparkUI: Bound SparkUI to 127.0.0.1, and started at http://127.0.0.1:4040
+18/06/11 13:49:06 INFO SparkContext: Added JAR file:/C:/Users/Utilisateur/Documents/R/R-3.4.4/library/sparklyr/java/sparklyr-2.1-2.11.jar at spark://127.0.0.1:51061/jars/sparklyr-2.1-2.11.jar with timestamp 1528717746572
+18/06/11 13:49:06 INFO Executor: Starting executor ID driver on host localhost
+18/06/11 13:49:06 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 51102.
+18/06/11 13:49:06 INFO NettyBlockTransferService: Server created on 127.0.0.1:51102
+18/06/11 13:49:06 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+18/06/11 13:49:06 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, 127.0.0.1, 51102, None)
+18/06/11 13:49:06 INFO BlockManagerMasterEndpoint: Registering block manager 127.0.0.1:51102 with 413.9 MB RAM, BlockManagerId(driver, 127.0.0.1, 51102, None)
+18/06/11 13:49:06 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, 127.0.0.1, 51102, None)
+18/06/11 13:49:06 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, 127.0.0.1, 51102, None)
+18/06/11 13:50:09 WARN SparkContext: Using an existing SparkContext; some configuration may not take effect.
+18/06/11 13:50:09 INFO SharedState: Warehouse path is 'C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive'.
+18/06/11 13:50:09 INFO HiveUtils: Initializing HiveMetastoreConnection version 1.2.1 using Spark classes.
+18/06/11 13:50:10 INFO HiveMetaStore: 0: Opening raw store with implemenation class:org.apache.hadoop.hive.metastore.ObjectStore
+18/06/11 13:50:10 INFO ObjectStore: ObjectStore, initialize called
+18/06/11 13:50:10 INFO Persistence: Property hive.metastore.integral.jdo.pushdown unknown - will be ignored
+18/06/11 13:50:10 INFO Persistence: Property datanucleus.cache.level2 unknown - will be ignored
+18/06/11 13:50:11 INFO ObjectStore: Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes="Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"
+18/06/11 13:50:11 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MFieldSchema" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 13:50:11 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MOrder" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 13:50:12 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MFieldSchema" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 13:50:12 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MOrder" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 13:50:12 INFO MetaStoreDirectSql: Using direct SQL, underlying DB is DERBY
+18/06/11 13:50:12 INFO ObjectStore: Initialized ObjectStore
+18/06/11 13:50:12 WARN ObjectStore: Version information not found in metastore. hive.metastore.schema.verification is not enabled so recording the schema version 1.2.0
+18/06/11 13:50:12 WARN ObjectStore: Failed to get database default, returning NoSuchObjectException
+18/06/11 13:50:12 INFO HiveMetaStore: Added admin role in metastore
+18/06/11 13:50:12 INFO HiveMetaStore: Added public role in metastore
+18/06/11 13:50:12 INFO HiveMetaStore: No user is added in admin role, since config is empty
+18/06/11 13:50:12 INFO HiveMetaStore: 0: get_all_databases
+18/06/11 13:50:12 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_all_databases	
+18/06/11 13:50:12 INFO HiveMetaStore: 0: get_functions: db=default pat=*
+18/06/11 13:50:12 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_functions: db=default pat=*	
+18/06/11 13:50:12 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MResourceUri" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 13:50:12 INFO SessionState: Created local directory: C:/Users/UTILIS~1/AppData/Local/Temp/24857389-1d8a-4c98-8c80-2e694913d7cb_resources
+18/06/11 13:50:12 INFO SessionState: Created HDFS directory: C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive/Utilisateur/24857389-1d8a-4c98-8c80-2e694913d7cb
+18/06/11 13:50:12 INFO SessionState: Created local directory: C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive/24857389-1d8a-4c98-8c80-2e694913d7cb
+18/06/11 13:50:12 INFO SessionState: Created HDFS directory: C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive/Utilisateur/24857389-1d8a-4c98-8c80-2e694913d7cb/_tmp_space.db
+18/06/11 13:50:12 INFO HiveClientImpl: Warehouse location for Hive client (version 1.2.1) is C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive
+18/06/11 13:50:12 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:12 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:12 INFO HiveMetaStore: 0: get_database: global_temp
+18/06/11 13:50:12 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: global_temp	
+18/06/11 13:50:12 WARN ObjectStore: Failed to get database global_temp, returning NoSuchObjectException
+18/06/11 13:50:13 INFO SparkSqlParser: Parsing command: SHOW TABLES
+18/06/11 13:50:15 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:15 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:15 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:15 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:15 INFO HiveMetaStore: 0: get_tables: db=default pat=*
+18/06/11 13:50:15 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_tables: db=default pat=*	
+18/06/11 13:50:15 WARN SparkSession$Builder: Using an existing SparkSession; some configuration may not take effect.
+18/06/11 13:50:15 INFO SparkSqlParser: Parsing command: SHOW TABLES
+18/06/11 13:50:15 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:15 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:15 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:15 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:15 INFO HiveMetaStore: 0: get_tables: db=default pat=*
+18/06/11 13:50:15 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_tables: db=default pat=*	
+18/06/11 13:50:29 WARN SparkSession$Builder: Using an existing SparkSession; some configuration may not take effect.
+18/06/11 13:50:29 INFO SparkSqlParser: Parsing command: SHOW TABLES
+18/06/11 13:50:29 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:29 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:29 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:29 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:29 INFO HiveMetaStore: 0: get_tables: db=default pat=*
+18/06/11 13:50:29 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_tables: db=default pat=*	
+18/06/11 13:50:29 WARN SparkSession$Builder: Using an existing SparkSession; some configuration may not take effect.
+18/06/11 13:50:29 INFO SparkSqlParser: Parsing command: SHOW TABLES
+18/06/11 13:50:29 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:29 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:29 INFO HiveMetaStore: 0: get_database: default
+18/06/11 13:50:29 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 13:50:29 INFO HiveMetaStore: 0: get_tables: db=default pat=*
+18/06/11 13:50:29 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_tables: db=default pat=*	
+18/06/11 13:52:47 INFO SparkContext: Invoking stop() from shutdown hook
+18/06/11 13:52:47 INFO SparkUI: Stopped Spark web UI at http://127.0.0.1:4040
+18/06/11 13:52:47 INFO MapOutputTrackerMasterEndpoint: MapOutputTrackerMasterEndpoint stopped!
+18/06/11 13:52:47 INFO MemoryStore: MemoryStore cleared
+18/06/11 13:52:47 INFO BlockManager: BlockManager stopped
+18/06/11 13:52:47 INFO BlockManagerMaster: BlockManagerMaster stopped
+18/06/11 13:52:47 INFO OutputCommitCoordinator$OutputCommitCoordinatorEndpoint: OutputCommitCoordinator stopped!
+18/06/11 13:52:47 INFO SparkContext: Successfully stopped SparkContext
+18/06/11 13:52:47 INFO ShutdownHookManager: Shutdown hook called
+18/06/11 13:52:47 INFO ShutdownHookManager: Deleting directory C:\Users\Utilisateur\AppData\Local\Temp\spark-6ca47d65-fe9e-4db8-b5b7-5292d9088e07
+18/06/11 14:01:16 INFO SparkContext: Running Spark version 2.1.0
+18/06/11 14:01:17 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+18/06/11 14:01:17 INFO SecurityManager: Changing view acls to: Utilisateur
+18/06/11 14:01:17 INFO SecurityManager: Changing modify acls to: Utilisateur
+18/06/11 14:01:17 INFO SecurityManager: Changing view acls groups to: 
+18/06/11 14:01:17 INFO SecurityManager: Changing modify acls groups to: 
+18/06/11 14:01:17 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(Utilisateur); groups with view permissions: Set(); users  with modify permissions: Set(Utilisateur); groups with modify permissions: Set()
+18/06/11 14:01:17 INFO Utils: Successfully started service 'sparkDriver' on port 51395.
+18/06/11 14:01:17 INFO SparkEnv: Registering MapOutputTracker
+18/06/11 14:01:17 INFO SparkEnv: Registering BlockManagerMaster
+18/06/11 14:01:17 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+18/06/11 14:01:17 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+18/06/11 14:01:17 INFO DiskBlockManager: Created local directory at C:\Users\Utilisateur\AppData\Local\Temp\blockmgr-12c89593-42ba-4d70-8a7d-509c369c621e
+18/06/11 14:01:17 INFO MemoryStore: MemoryStore started with capacity 413.9 MB
+18/06/11 14:01:17 INFO SparkEnv: Registering OutputCommitCoordinator
+18/06/11 14:01:17 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+18/06/11 14:01:17 INFO SparkUI: Bound SparkUI to 127.0.0.1, and started at http://127.0.0.1:4040
+18/06/11 14:01:17 INFO SparkContext: Added JAR file:/C:/Users/Utilisateur/Documents/R/R-3.4.4/library/sparklyr/java/sparklyr-2.1-2.11.jar at spark://127.0.0.1:51395/jars/sparklyr-2.1-2.11.jar with timestamp 1528718477497
+18/06/11 14:01:17 INFO Executor: Starting executor ID driver on host localhost
+18/06/11 14:01:17 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 51436.
+18/06/11 14:01:17 INFO NettyBlockTransferService: Server created on 127.0.0.1:51436
+18/06/11 14:01:17 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+18/06/11 14:01:17 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, 127.0.0.1, 51436, None)
+18/06/11 14:01:17 INFO BlockManagerMasterEndpoint: Registering block manager 127.0.0.1:51436 with 413.9 MB RAM, BlockManagerId(driver, 127.0.0.1, 51436, None)
+18/06/11 14:01:17 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, 127.0.0.1, 51436, None)
+18/06/11 14:01:17 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, 127.0.0.1, 51436, None)
+18/06/11 14:01:18 WARN SparkContext: Using an existing SparkContext; some configuration may not take effect.
+18/06/11 14:01:18 INFO SharedState: Warehouse path is 'C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive'.
+18/06/11 14:01:18 INFO HiveUtils: Initializing HiveMetastoreConnection version 1.2.1 using Spark classes.
+18/06/11 14:01:18 INFO HiveMetaStore: 0: Opening raw store with implemenation class:org.apache.hadoop.hive.metastore.ObjectStore
+18/06/11 14:01:18 INFO ObjectStore: ObjectStore, initialize called
+18/06/11 14:01:18 INFO Persistence: Property hive.metastore.integral.jdo.pushdown unknown - will be ignored
+18/06/11 14:01:18 INFO Persistence: Property datanucleus.cache.level2 unknown - will be ignored
+18/06/11 14:01:19 INFO ObjectStore: Setting MetaStore object pin classes with hive.metastore.cache.pinobjtypes="Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"
+18/06/11 14:01:19 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MFieldSchema" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 14:01:19 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MOrder" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 14:01:20 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MFieldSchema" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 14:01:20 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MOrder" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 14:01:20 INFO MetaStoreDirectSql: Using direct SQL, underlying DB is DERBY
+18/06/11 14:01:20 INFO ObjectStore: Initialized ObjectStore
+18/06/11 14:01:20 WARN ObjectStore: Version information not found in metastore. hive.metastore.schema.verification is not enabled so recording the schema version 1.2.0
+18/06/11 14:01:20 WARN ObjectStore: Failed to get database default, returning NoSuchObjectException
+18/06/11 14:01:20 INFO HiveMetaStore: Added admin role in metastore
+18/06/11 14:01:20 INFO HiveMetaStore: Added public role in metastore
+18/06/11 14:01:20 INFO HiveMetaStore: No user is added in admin role, since config is empty
+18/06/11 14:01:20 INFO HiveMetaStore: 0: get_all_databases
+18/06/11 14:01:20 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_all_databases	
+18/06/11 14:01:20 INFO HiveMetaStore: 0: get_functions: db=default pat=*
+18/06/11 14:01:20 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_functions: db=default pat=*	
+18/06/11 14:01:20 INFO Datastore: The class "org.apache.hadoop.hive.metastore.model.MResourceUri" is tagged as "embedded-only" so does not have its own datastore table.
+18/06/11 14:01:20 INFO SessionState: Created local directory: C:/Users/UTILIS~1/AppData/Local/Temp/6cc35951-4096-491a-aa53-951493bdd53c_resources
+18/06/11 14:01:20 INFO SessionState: Created HDFS directory: C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive/Utilisateur/6cc35951-4096-491a-aa53-951493bdd53c
+18/06/11 14:01:20 INFO SessionState: Created local directory: C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive/6cc35951-4096-491a-aa53-951493bdd53c
+18/06/11 14:01:20 INFO SessionState: Created HDFS directory: C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive/Utilisateur/6cc35951-4096-491a-aa53-951493bdd53c/_tmp_space.db
+18/06/11 14:01:20 INFO HiveClientImpl: Warehouse location for Hive client (version 1.2.1) is C:/Users/Utilisateur/AppData/Local/spark/spark-2.1.0-bin-hadoop2.7/tmp/hive
+18/06/11 14:01:20 INFO HiveMetaStore: 0: get_database: default
+18/06/11 14:01:20 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 14:01:20 INFO HiveMetaStore: 0: get_database: global_temp
+18/06/11 14:01:20 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: global_temp	
+18/06/11 14:01:20 WARN ObjectStore: Failed to get database global_temp, returning NoSuchObjectException
+18/06/11 14:01:21 INFO SparkSqlParser: Parsing command: SHOW TABLES
+18/06/11 14:01:22 INFO HiveMetaStore: 0: get_database: default
+18/06/11 14:01:22 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 14:01:22 INFO HiveMetaStore: 0: get_database: default
+18/06/11 14:01:22 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_database: default	
+18/06/11 14:01:22 INFO HiveMetaStore: 0: get_tables: db=default pat=*
+18/06/11 14:01:22 INFO audit: ugi=Utilisateur	ip=unknown-ip-addr	cmd=get_tables: db=default pat=*	
+18/06/11 18:42:13 WARN NettyRpcEndpointRef: Error sending message [message = Heartbeat(driver,[Lscala.Tuple2;@1676de3,BlockManagerId(driver, 127.0.0.1, 51436, None))] in 1 attempts
+org.apache.spark.rpc.RpcTimeoutException: Futures timed out after [10 seconds]. This timeout is controlled by spark.executor.heartbeatInterval
+	at org.apache.spark.rpc.RpcTimeout.org$apache$spark$rpc$RpcTimeout$$createRpcTimeoutException(RpcTimeout.scala:48)
+	at org.apache.spark.rpc.RpcTimeout$$anonfun$addMessageIfTimeout$1.applyOrElse(RpcTimeout.scala:63)
+	at org.apache.spark.rpc.RpcTimeout$$anonfun$addMessageIfTimeout$1.applyOrElse(RpcTimeout.scala:59)
+	at scala.PartialFunction$OrElse.apply(PartialFunction.scala:167)
+	at org.apache.spark.rpc.RpcTimeout.awaitResult(RpcTimeout.scala:83)
+	at org.apache.spark.rpc.RpcEndpointRef.askWithRetry(RpcEndpointRef.scala:102)
+	at org.apache.spark.executor.Executor.org$apache$spark$executor$Executor$$reportHeartBeat(Executor.scala:538)
+	at org.apache.spark.executor.Executor$$anon$1$$anonfun$run$1.apply$mcV$sp(Executor.scala:567)
+	at org.apache.spark.executor.Executor$$anon$1$$anonfun$run$1.apply(Executor.scala:567)
+	at org.apache.spark.executor.Executor$$anon$1$$anonfun$run$1.apply(Executor.scala:567)
+	at org.apache.spark.util.Utils$.logUncaughtExceptions(Utils.scala:1951)
+	at org.apache.spark.executor.Executor$$anon$1.run(Executor.scala:567)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.util.concurrent.FutureTask.runAndReset(Unknown Source)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.access$301(Unknown Source)
+	at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: java.util.concurrent.TimeoutException: Futures timed out after [10 seconds]
+	at scala.concurrent.impl.Promise$DefaultPromise.ready(Promise.scala:219)
+	at scala.concurrent.impl.Promise$DefaultPromise.result(Promise.scala:223)
+	at scala.concurrent.Await$$anonfun$result$1.apply(package.scala:190)
+	at scala.concurrent.BlockContext$DefaultBlockContext$.blockOn(BlockContext.scala:53)
+	at scala.concurrent.Await$.result(package.scala:190)
+	at org.apache.spark.rpc.RpcTimeout.awaitResult(RpcTimeout.scala:81)
+	... 14 more
+18/06/11 18:42:14 WARN NettyRpcEnv: Ignored message: HeartbeatResponse(false)

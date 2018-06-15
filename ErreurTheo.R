@@ -13,8 +13,9 @@ library(plotly)
 BasePK<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
 BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
+SommeDosePK<- ChangeNameCol(SommeDosePK, "DosePK","SumDosePK")
 BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
-BasePK$CoefPK<-BasePK$DosePK.x/BasePK$DosePK.y
+BasePK$CoefPK<-BasePK$DosePK/BasePK$SumDosePK
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
 culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
@@ -23,8 +24,9 @@ EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
 DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
 SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum)
+SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DH","SumDH")
 BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
-BaseDH$CoefDH<-BaseDH$DH.x/BaseDH$DH.y
+BaseDH$CoefDH<-BaseDH$DH/BaseDH$SumDH
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"))
 Base$Coef<-Base$CoefPK/Base$CoefDH
@@ -41,8 +43,9 @@ p1<-plot_ly(MaxCoef, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, 
 BasePKN<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE, data= pk, sum)
 BasePKN$DosePK<-BasePKN$mean*BasePKN$freq
 SommeDosePKN<- aggregate(DosePK~PHYTOPROD, data= BasePKN, sum)
+SommeDosePKN<- ChangeNameCol(SommeDosePKN, "DosePK","SumDosePK")
 BasePKN<-merge(BasePKN, SommeDosePKN, by="PHYTOPROD")
-BasePKN$CoefPK<-BasePKN$DosePK.x/BasePKN$DosePK.y
+BasePKN$CoefPK<-BasePKN$DosePK/BasePKN$SumDosePK
 BasePKN <- ChangeNameCol(BasePKN,"PHYTOPROD","AMM")
 ##CoefPK (produit, culture, region)
 BaseN<-merge(BasePKN,BaseDH,by=c("AMM","ESPECE"))
@@ -63,9 +66,11 @@ load(file.path(folderIn,"Agreste","AGRESTE_2014.rda"))
 BasePKS<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
 BasePKS$DosePK<-BasePKS$mean*BasePKS$freq
 BasePKS<-merge(BasePKS,AGRESTE_2014, by=c("ESPECE","CODE_REG"))
-SommeCulture<- aggregate(cbind(DosePK,Area)~PHYTOPROD+CODE_REG, data= BasePKS, sum)
+BasePKS$DoseSurf<- BasePKS$DosePK * BasePKS$Area 
+SommeCulture<- aggregate(DoseSurf~PHYTOPROD+CODE_REG, data= BasePKS, sum)
+SommeCulture <- ChangeNameCol(SommeCulture,"DoseSurf","SumDoseSurf")
 BasePKS<- merge(BasePKS, SommeCulture, by=c("PHYTOPROD","CODE_REG"))
-BasePKS$CoefPK<-BasePKS$DosePK.x/(BasePKS$DosePK.y*BasePKS$Area.y)
+BasePKS$CoefPK<-BasePKS$DosePK/BasePKS$SumDoseSurf
 BasePKS <- ChangeNameCol(BasePKS,"PHYTOPROD","AMM")
 BaseS<-merge(BasePKS,BaseDH,by=c("AMM","ESPECE"))
 BaseS$Coef<-BaseS$CoefPK/BaseS$CoefDH
@@ -84,10 +89,11 @@ BasePKSN<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE, data= pk, sum)
 BasePKSN$DosePK<-BasePKSN$mean*BasePKSN$freq
 AgresteNational<-aggregate(Area~ESPECE, data = AGRESTE_2014, sum) ##Je suis pas sur d'aggreger les surfaces par culture!!!
 BasePKSN<-merge(BasePKSN,AgresteNational, by="ESPECE")
-SommeCultureSN<- aggregate(cbind(DosePK,Area)~PHYTOPROD, data= BasePKSN, sum)
-
+BasePKSN$DoseSurf<- BasePKSN$DosePK * BasePKSN$Area 
+SommeCultureSN<- aggregate(DoseSurf~PHYTOPROD, data= BasePKSN, sum)
+SommeCultureSN <- ChangeNameCol(SommeCultureSN,"DoseSurf","SumDoseSurf")
 BasePKSN<- merge(BasePKSN, SommeCultureSN, by="PHYTOPROD")
-BasePKSN$CoefPK<-BasePKSN$DosePK.x/(BasePKSN$DosePK.y*BasePKSN$Area.y)
+BasePKSN$CoefPK<-BasePKSN$DosePK/BasePKSN$SumDoseSurf
 BasePKSN <- ChangeNameCol(BasePKSN,"PHYTOPROD","AMM")
 BaseSN<-merge(BasePKSN,BaseDH,by=c("AMM","ESPECE"))
 BaseSN$Coef<-BaseSN$CoefPK/BaseSN$CoefDH
@@ -99,3 +105,5 @@ p4<-plot_ly(MaxCoefSN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM
   layout(yaxis = list(type = "log"))
 
 p <- subplot(p1, p2, p3, p4)
+
+

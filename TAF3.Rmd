@@ -26,29 +26,35 @@ library("DataManagement")
 library(plotly)
 ```
 
-#Erreurs régionales
+##`On tient ne pas compte de la surface.  `{style="color: #003ebb;"} 
+##`On les considère tous egaux.  `{style="color: #003ebb;"} 
+##Erreurs méthode DH vs coefficients PK à l'échelle régionale: 
+
 ```{r, include=FALSE}
 #Erreurs régionales
 ##CofeBasePK (produit, culture, region)
 BasePK<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
 BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
+SommeDosePK<- ChangeNameCol(SommeDosePK, "DosePK","SumDosePK")
 BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"))
-BasePK$CoefBasePK<-BasePK$DosePK.x/BasePK$DosePK.y
+BasePK$CoefPK<-BasePK$DosePK/BasePK$SumDosePK
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
 culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
 EPHY <- cbind(EPHY,culture)
 EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
-SommeDHCulture<-aggregate(Dose.d.application.retenue~AMM,data = DHCulture,sum)
+DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
+SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum)
+SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DH","SumDH")
 BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
-BaseDH$CoefDH<-BaseDH$Dose.d.application.retenue.x/BaseDH$Dose.d.application.retenue.y
+BaseDH$CoefDH<-BaseDH$DH/BaseDH$SumDH
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"))
-Base$CoefPK<-Base$CoefBasePK/Base$CoefDH
+Base$Coef<-Base$CoefPK/Base$CoefDH
 ##Max (produit,region)
-MaxCoef<- aggregate(CoefPK~AMM+CODE_REG, data = Base, max)
+MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max)
 ```
 
 
@@ -56,37 +62,39 @@ MaxCoef<- aggregate(CoefPK~AMM+CODE_REG, data = Base, max)
 ```{r }
 Base
 ```
-##Erreurs méthode DH vs coefficients PK à l'échelle régionale
+
 Quelle est la distribution des rapports des max_culture(coef_PK/coef_DH) ?
 
 Nota Bene: il y a `which(is.infinite(MaxCoef$CoefPK))` régions x AMM qui sont infinis, à comparer avec les 148 produits dans PK sans être dans Ephy à l'échelle nationale. Il est normal que l'on ait perdu des produits dans PK sans être dans Ephy car on est à l'échelle régionale et les règles de secret statistiques gènèrent des NA à l'échelle région x produit qu'il n'y a pas forcément à l'échelle nationale. 
 
 ```{r}
-plot_ly(MaxCoef, x = ~ CoefPK, type = "histogram", text = ~paste("AMM:", AMM, "Region" , CODE_REG)) %>%
+##Hist
+p1<-plot_ly(MaxCoef, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, "<br>Region" , CODE_REG),
+            name= "Erreurs Regionales à surface égale") %>%
   layout(yaxis = list(type = "log"))
+p1
 ```
 
-CoefPK: rapport maximum du coef PK / coef DH pour chaque AMM sur les différentes cultures.
+Coef: rapport maximum du coef PK / coef DH pour chaque AMM sur les différentes cultures.
 
-##Erreur National
+##Erreurs méthode DH vs coefficients PK à l'échelle Nationale:
+
 ```{r, include= FALSE}
+
 #Erreurs nationale
 ##CofeBasePK (produit, culture)
-QPKN<-aggregate(quantite_pk~PHYTOPROD+ESPECE,data= pk, sum)
-SurfaceN<-aggregate(Area~ESPECE, data = pk, sum)
-BasePKN<-join(QPKN,SurfaceN)
-BasePKN$DosePKN<-BasePKN$quantite_pk/BasePKN$Area
-SommeDosePKN<- aggregate(DosePKN~PHYTOPROD, data= BasePKN, sum)
+BasePKN<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE, data= pk, sum)
+BasePKN$DosePK<-BasePKN$mean*BasePKN$freq
+SommeDosePKN<- aggregate(DosePK~PHYTOPROD, data= BasePKN, sum)
+SommeDosePKN<- ChangeNameCol(SommeDosePKN, "DosePK","SumDosePK")
 BasePKN<-merge(BasePKN, SommeDosePKN, by="PHYTOPROD")
-BasePKN$CoefBasePKN<-BasePKN$DosePKN.x/BasePKN$DosePKN.y
+BasePKN$CoefPK<-BasePKN$DosePK/BasePKN$SumDosePK
 BasePKN <- ChangeNameCol(BasePKN,"PHYTOPROD","AMM")
 ##CoefPK (produit, culture, region)
 BaseN<-merge(BasePKN,BaseDH,by=c("AMM","ESPECE"))
-BaseN$CoefPKN<-BaseN$CoefBasePKN/BaseN$CoefDH
+BaseN$Coef<-BaseN$CoefPK/BaseN$CoefDH
 ##Max (produit)
-MaxCoefN<- aggregate(CoefPKN~AMM, data = BaseN, max)
-##Hist
-plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) 
+MaxCoefN<- aggregate(Coef~AMM, data = BaseN, max)
 ```
 
 ```{r}
@@ -94,7 +102,106 @@ BaseN
 ```
 
 ```{r}
-plot_ly(MaxCoefN, x = ~ CoefPKN, type = "histogram", text = ~paste("AMM:", AMM)) %>%
+##Hist
+p2<-plot_ly(MaxCoefN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM),
+            name= "Erreurs Nationales à surface égale") %>%
   layout(yaxis = list(type = "log"))
+p2
+```
+
+
+##`On tient compte de la surface. `{style="color: #003ebb;"} 
+##Erreurs méthode DH vs coefficients PK à l'échelle régionale: 
+
+```{r, include= FALSE}
+
+#On inclut la surface
+#Erreurs regionales
+load(file.path(folderIn,"Agreste","AGRESTE_2014.rda"))
+#Erreurs régionales
+##CofeBasePK (produit, culture, region)
+BasePKS<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
+BasePKS$DosePK<-BasePKS$mean*BasePKS$freq
+BasePKS<-merge(BasePKS,AGRESTE_2014, by=c("ESPECE","CODE_REG"))
+BasePKS$DoseSurf<- BasePKS$DosePK * BasePKS$Area 
+SommeCulture<- aggregate(DoseSurf~PHYTOPROD+CODE_REG, data= BasePKS, sum)
+SommeCulture <- ChangeNameCol(SommeCulture,"DoseSurf","SumDoseSurf")
+BasePKS<- merge(BasePKS, SommeCulture, by=c("PHYTOPROD","CODE_REG"))
+BasePKS$CoefPK<-BasePKS$DosePK/BasePKS$SumDoseSurf
+BasePKS <- ChangeNameCol(BasePKS,"PHYTOPROD","AMM")
+BaseS<-merge(BasePKS,BaseDH,by=c("AMM","ESPECE"))
+BaseS$Coef<-BaseS$CoefPK/BaseS$CoefDH
+##Max (produit)
+MaxCoefS<- aggregate(Coef~AMM+CODE_REG, data = BaseS, max)
+```
+
+```{r}
+BaseS
+```
+
+
+```{r, warning=FALSE}
+##Hist
+p3<-plot_ly(MaxCoefS, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, "<br>Region" , CODE_REG), 
+            name= "Erreurs Regionales en tenant compte du surface") %>%
+  layout(yaxis = list(type = "log"))
+p3
+```
+
+##Erreurs méthode DH vs coefficients PK à l'échelle Nationale:
+```{r, include=FALSE}
+#Erreurs nationale
+##CofeBasePK (produit, culture)
+BasePKSN<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE, data= pk, sum)
+BasePKSN$DosePK<-BasePKSN$mean*BasePKSN$freq
+AgresteNational<-aggregate(Area~ESPECE, data = AGRESTE_2014, sum) ##Je suis pas sur d'aggreger les surfaces par culture!!!
+BasePKSN<-merge(BasePKSN,AgresteNational, by="ESPECE")
+BasePKSN$DoseSurf<- BasePKSN$DosePK * BasePKSN$Area 
+SommeCultureSN<- aggregate(DoseSurf~PHYTOPROD, data= BasePKSN, sum)
+SommeCultureSN <- ChangeNameCol(SommeCultureSN,"DoseSurf","SumDoseSurf")
+BasePKSN<- merge(BasePKSN, SommeCultureSN, by="PHYTOPROD")
+BasePKSN$CoefPK<-BasePKSN$DosePK/BasePKSN$SumDoseSurf
+BasePKSN <- ChangeNameCol(BasePKSN,"PHYTOPROD","AMM")
+BaseSN<-merge(BasePKSN,BaseDH,by=c("AMM","ESPECE"))
+BaseSN$Coef<-BaseSN$CoefPK/BaseSN$CoefDH
+##Max (produit)
+MaxCoefSN<- aggregate(Coef~AMM, data = BaseSN, max)
+```
+
+```{r}
+BaseSN
+```
+
+```{r, warning=FALSE}
+##Hist
+p4<-plot_ly(MaxCoefSN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM),
+            name= "Erreurs Nationales en tenant compte du surface") %>%
+  layout(yaxis = list(type = "log"))
+p4
+```
+###Superposition des quatre histogramme, regionale et nationale, avec surface et sans surface
+```{r, message=FALSE , warning=FALSE, fig.width=12, fig.height=7 , fig.align = "center"}
+p <- subplot(p1, p2, p3, p4)
+p
+```
+
+
+***************
+#`Erreurs méthode DH vs coefficients PK à l'échelle `{style="color: #b00;"}
+#`du code postal: `{style="color: #b00;"}
+***************
+
+```{r}
+load(file=file.path(dataFolder,"donnees_R/fichiersOdr/CoefPK_cp.rda"))
+CoefPK_cp
+```
+
+```{r, message=FALSE , warning=FALSE}
+MaxCoefCP<- aggregate(Coef~PHYTOPROD+Code_postal+CODE_DEPT+CODE_REG, data = CoefPK_cp, max)
+##Hist
+plot_ly(MaxCoefCP, x = ~ Coef, type = "histogram", text = ~paste("AMM:", PHYTOPROD, "<br>Region" , CODE_REG,"<br>Departement" , CODE_DEPT,"<br>Code Postal" , Code_postal), 
+        name= "Erreurs Code Postal") %>%
+  layout(yaxis = list(type = "log"))
+
 ```
 
