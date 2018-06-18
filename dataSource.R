@@ -20,4 +20,4 @@
 # options(warn=2)
 
 # dataFolder <- "~/data"
-dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
+dataFolder <- "/media/5AE1EC8814E5040E" # Corentin

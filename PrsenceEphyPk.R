@@ -1,5 +1,5 @@
-dataFolder <- "~/data"
-load(file.path(dataFolder,"donnees_R","PK","pk.rda"))
+source("dataSource.R")
+load(file.path(dataFolder,"donnees_R","PK","PK.rda"))
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
 colnames(intituleCulture)<-c("culture","betterave","ble_dur","ble_tendre","canne_a_s","colza","mais_ens","mais_gr",
@@ -80,6 +80,7 @@ indices <- c(4,11,20:30,7:9,8:10,10:20)
 CorrespondanceCultureEphyPk<-insertRows(CorrespondanceCultureEphyPk, newlines, indices)
 CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCultureEphyPk$culture%in%"Adjuvants"),]
 
+stop()
 saveAs(CorrespondanceCultureEphyPk,"CorrespondanceCultureEphyPk",file.path(dataFolder,"donnees_R","EPHY"))
 
 ##############################################################################
