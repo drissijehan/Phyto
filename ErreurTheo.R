@@ -1,5 +1,4 @@
-dataFolder <- "~/data"
-#dataFolder <- "/media/5AE1EC8814E5040E/" # Corentin
+source("dataSource.R") # doit contenir quelque chose du genre dataFolder <- "~/data"
 folderIn <- file.path(dataFolder,"donnees_R")
 folderOut <- file.path(dataFolder,"donnees_R","PK")
 load(file.path(folderIn,"PK","PK.rda"))
@@ -12,7 +11,7 @@ library(Hmisc)
 #Dans cette partie on a pas pris compte de la surface
 #Erreurs régionales
 ##CofeBasePK (produit, culture, region)
-pk<-pk[pk$CODE_REG%nin%"00",]
+# pk<-pk[pk$CODE_REG%nin%"00",]
 BasePK<-aggregate(cbind(mean,freq)~PHYTOPROD+ESPECE+CODE_REG, data= pk, sum)
 BasePK$DosePK<-BasePK$mean*BasePK$freq
 SommeDosePK<- aggregate(DosePK~PHYTOPROD+CODE_REG, data= BasePK, sum)
@@ -21,48 +20,67 @@ BasePK<-merge(BasePK, SommeDosePK, by=c("PHYTOPROD","CODE_REG"), all= TRUE)
 ####################################################################################
 SommeDosePK[which(SommeDosePK$PHYTOPROD=="2000018"),]
 SommeDosePK[which(SommeDosePK$PHYTOPROD=="2000380"),]
-#=> en plus problème de région supplémentaire : 21 qui disparait ensuite dans Base
-BasePK[which(BasePK$PHYTOPROD=="2000018"),]
-BasePK[which(BasePK$PHYTOPROD=="2000380"),]
-#=> c'est la betterave qui avait disparu pour 00
-nrow(unique(SommeDosePK[,c("PHYTOPROD","CODE_REG")]))
-nrow(unique(BasePK[,c("PHYTOPROD","CODE_REG")]))
-#=> il y a aucun probleme
+
+# verification no lost phytoprod x code_reg in the merge
+expect_equal(nrow(unique(SommeDosePK[,c("PHYTOPROD","CODE_REG")])),
+             nrow(unique(BasePK[,c("PHYTOPROD","CODE_REG")])))
+
 ####################################################################################
 BasePK$CoefPK<-BasePK$DosePK/BasePK$SumDosePK
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
-culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
-EPHY <- cbind(EPHY,culture)
-EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
-DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
+EPHY2<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="ESPECE",by.y="culture")
+
+# aggregation sur les différentes années d'homologuation pour les produits (à terme 
+# pourrait être remplacé par utilisation de la dose retenue l'année de BNVD donnée) 
+# mais aussi aggrégation sur les différents "Intitule", donc les différentes cibles
+DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median,na.rm=TRUE)
 DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
-SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum)
+
+SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum,na.rm=TRUE)
+
 SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DH","SumDH")
 BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
 BaseDH$CoefDH<-BaseDH$DH/BaseDH$SumDH
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"),all.x=TRUE)
+
+# check no losses since SumDosePK was computed
+part1 <- aggregate(Base$DosePK,by=list(Base$AMM,Base$CODE_REG),sum)
+part2 <- aggregate(Base$SumDosePK,by=list(Base$AMM,Base$CODE_REG),mean)
+expect_equal(part1$x,part2$x)
+
+
 Base$Coef<-Base$CoefPK/Base$CoefDH
 
 # Pb: 
 Base[which(Base$AMM=="2000018"),]
-#=> somme pour région 00 pour blé et orge n'est pas égale à SumDosePK (aucun probleme)
+#=> Ok, sumDosePK est bien la somme des DosePK pour la région
+
+
+
 table(Base[which(is.na(Base$DH)),"ESPECE"])
 #=> ca fait beaucoup, par exemple pour le colza, à étudier
 
+table(Base[which(is.na(Base$DH)&Base$CODE_REG!="00"),"ESPECE"])
+#=> même à l'échelle régionale ça fait beaucoup de produits avec au moins 3 applications
+#   pour lesquelles il n'y a pas de DH connue
+
 
 ##Max (produit,region)
-MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max)
+MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max,na.rm=TRUE)
+MaxCoef <- ChangeNameCol(MaxCoef,"Coef","MaxCoef")
+test <- merge(Base,MaxCoef,by=c("AMM","CODE_REG"),all.x=TRUE)
+expect_equal(Count(is.na(test$MaxCoef)& !is.na(test$DH)),0)
+
 ####################################################################################
 MaxCoef[MaxCoef$Coef < 1,] #-> 2 AMM :2030239 (reg 25), 2090057 (reg 41)
 Base[Base$AMM%in%"2030239",] #-> 2030239 n'est present que sur 2 especes sur la region 25, avec une coef<1 et l'autre coef NA (CoefDH=NA)
                               #-> 2090057 de meme
 ##Hist
 p1<-plot_ly(MaxCoef, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, "<br>Region" , CODE_REG),
-            name= "Erreurs Regionales à surface égale") %>%
+            name="Erreur reg. surf. egual") %>%
   layout(yaxis = list(type = "log"))
-
 
 #Erreurs nationale
 ##CofeBasePK (produit, culture)
@@ -80,7 +98,7 @@ BaseN$Coef<-BaseN$CoefPK/BaseN$CoefDH
 MaxCoefN<- aggregate(Coef~AMM, data = BaseN, max)
 ##Hist
 p2<-plot_ly(MaxCoefN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM),
-            name= "Erreurs Nationales à surface égale") %>%
+            name= "National error equal surfaces") %>%
   layout(yaxis = list(type = "log"))
 
 

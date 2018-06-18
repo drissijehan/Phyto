@@ -6,4 +6,5 @@ figure/
 *.md
 .Rhistory
 .RData
-
+dataSource.R
+.Rhistory

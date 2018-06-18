@@ -4,74 +4,40 @@ library(stringr)
 library(Hmisc)
 library(testthat)
 
-dataFolder <- "~/data"
+source("dataSource.R") # doit contenir quelque chose du genre dataFolder <- "~/data"
+nLignesProduitsExcel <- list("2008"=(28386-4),"2009"=(28744-4),"2010"=(28337-4),"2011"=(28337-4),"2012"=(29930-4),
+                          "2013"=(31336-4),"2014"=(31483-4),"2015"=(31888-4),
+                          "2016"=(34382-4),"2017"=(37111-4))
+ImportEPHY <- function(year,nToSkip=4,nCol=20){
+    cat("year:",year,";")
+    filePath <- file.path(dataFolder,paste0("carto_init/ephy/EPHY/ToutPPP_",year,".csv"))
+    testReadCSV <- read.csv(filePath,sep=";",stringsAsFactor=FALSE,header=FALSE)[-(1:nToSkip),]
+    for(iCol in 1:ncol(testReadCSV)){
+        temp <- iconv(testReadCSV[,iCol],from="CP1252",to="UTF-8")
+        temp <- gsub("^ +","",temp)
+        temp <- gsub(" +$","",temp)
+        testReadCSV[,iCol] <- temp 
+    }
 
-ToutPPP_2008 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2008.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                           skip = 4)
+    toRemove <- which(apply(testReadCSV,1,function(x){all(x=="")}))
+    if(length(toRemove)>0){
+        testReadCSV<-testReadCSV[-toRemove,]
+    }
 
-ToutPPP_2009 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2009.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
+    expect_equal(ncol(testReadCSV),nCol)
+    expect_equal(nrow(testReadCSV),nLignesProduitsExcel[[as.character(year)]])
 
-ToutPPP_2010 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2010.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
+    testReadCSV$Annee_EPHY <- year
 
-ToutPPP_2011 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2011.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
+    return(testReadCSV)
+}
 
-ToutPPP_2012 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2012.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
+EPHY <- data.frame(data.table::rbindlist(lapply(names(nLignesProduitsExcel),ImportEPHY)))
 
-ToutPPP_2013 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2013.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
-
-ToutPPP_2014 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2014.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
-
-ToutPPP_2015 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2015.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
-
-ToutPPP_2016 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2016.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
-
-ToutPPP_2017 <- read.csv(file.path(dataFolder,"carto_init/ephy/EPHY/ToutPPP_2017.csv"), 
-                           ";", fileEncoding="CP1252",header=F,
-                         skip = 4)
-EPHY<- rbind(ToutPPP_2008, ToutPPP_2009, ToutPPP_2010, ToutPPP_2011, ToutPPP_2012, ToutPPP_2013, ToutPPP_2014, ToutPPP_2015, ToutPPP_2016, ToutPPP_2017)
-colnames(EPHY) <- c("Nom du produit","AMM","Fonction","Etat du produit","Description de l'intrant Date de decision"
-                    ,"date de retrait","Filiere","Gamme d'usages","Etat de l usage","Usages.Date de decision","Intitule","Condition d emploi"
-                    ,"Methode d application","Dose d application retenue","Unite de la dose retenue","Type commercial"
-                    ,"nom SA1","nom SA2","nom SA3","nom SA4")
-
-Annee_EPHY<- c(rep("2008",nrow(ToutPPP_2008)),rep("2009", nrow(ToutPPP_2009)), rep("2010", nrow(ToutPPP_2010)),
-               rep("2011", nrow(ToutPPP_2011)), rep("2012", nrow(ToutPPP_2012)), 
-               rep("2013", nrow(ToutPPP_2013)), rep("2014", nrow(ToutPPP_2014)), rep("2015", nrow(ToutPPP_2015)), 
-               rep("2016", nrow(ToutPPP_2016)), rep("2017", nrow(ToutPPP_2017)))
-EPHY <- cbind(EPHY, Annee_EPHY)
-
-EPHY<-subset(EPHY, EPHY$Fonction %nin% c("0,014","0,15","0,33","1","2","4","0,07","0,2","0,2","0,5","1,5","3","5","0,1","0,25","0,625","1,6","300"))
-
-iconv.data.frame<-function(df,...){ 
-  df.names<-iconv(names(df),...) 
-  df.rownames<-iconv(rownames(df),...) 
-  names(df)<-df.names 
-  rownames(df)<-df.rownames 
-  df.list<-lapply(df,function(x){ 
-    if(class(x)=="factor"){x<-factor(iconv(as.character(x),...))}else 
-      if(class(x)=="character"){x<-iconv(x,...)}else{x} 
-  }) 
-  df.new<-do.call("data.frame",df.list) 
-  return(df.new) 
-} 
-EPHY=iconv.data.frame(EPHY)
+colnames(EPHY)[1:20] <- c("Nom.du.produit","AMM","Fonction","Etat.du.produit","Description.de.l.intrant.Date.de.decision"
+                    ,"date.de.retrait","Filiere","Gamme.d.usages","Etat.de.l.usage","Usages.Date.de.decision","Intitule","Condition.d.emploi"
+                    ,"Methode.d.application","Dose.d.application.retenue","Unite.de.la.dose.retenue","Type.commercial"
+                    ,"nom.SA1","nom.SA2","nom.SA3","nom.SA4")
 
 EPHY$Dose.d.application.retenue <-gsub(",", ".", EPHY$Dose.d.application.retenue)
 EPHY$Dose.d.application.retenue<- as.numeric(as.character( EPHY$Dose.d.application.retenue))
@@ -82,6 +48,21 @@ intituleCulture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE)
 
 expect_equal(nrow(EPHY),length(intituleCulture))
 
-EPHY <- cbind(EPHY,intituleCulture)
+EPHY <- cbind(EPHY,ESPECE=intituleCulture)
+EPHY$ESPECE <- as.character(EPHY$ESPECE)
 
 save(EPHY,file =file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
+
+# for(iCol in 1:ncol(EPHY)){
+#     if(class(EPHY[,iCol])=="factor"){
+#         EPHY[,iCol] <- as.character(EPHY[,iCol])
+#     }
+# }
+# 
+# expect_equal(EPHYnew,EPHY)
+# View(rbind(EPHY[28382:28385,],EPHYnew[28382:28385,]))
+#=> Il y avait clairement des problèmes, ici des lignes sautées aléatoirement, à priori pas grave 
+#   mais les lignes supplémentaires dans EPHY ne semblent pas être des lignes pertinentes
+
+nomsEspecesEPHY <- unique(EPHY$ESPECE)
+

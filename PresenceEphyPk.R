@@ -54,25 +54,25 @@ insertRows <- function(dat, newlines, indices){
   dat <- gx.sort.df(~lines, dat)
   subset(dat, select=-ncol(dat))
 }
-newlines <- rbind( c("ble tendre","Blé"), 
+newlines <- rbind( c("ble tendre","BlÃ©"), 
                    
-                   c("mais gr","Maïs"),
+                   c("mais gr","MaÃ¯s"),
                    
-                   c("ble dur","Traitements généraux"),c("ble tendre","Traitements généraux"), c("canne a s","Traitements généraux"), 
-                   c("colza","Traitements généraux"), c("mais ens","Traitements généraux"), c("mais gr","Traitements généraux"), 
-                   c("orge","Traitements généraux"),  c("pois","Traitements généraux"), c("pomme de t","Traitements généraux"), 
-                   c("tournesol","Traitements généraux"), c("triticale","Traitements généraux"), 
+                   c("ble dur","Traitements gÃ©nÃ©raux"),c("ble tendre","Traitements gÃ©nÃ©raux"), c("canne a s","Traitements gÃ©nÃ©raux"), 
+                   c("colza","Traitements gÃ©nÃ©raux"), c("mais ens","Traitements gÃ©nÃ©raux"), c("mais gr","Traitements gÃ©nÃ©raux"), 
+                   c("orge","Traitements gÃ©nÃ©raux"),  c("pois","Traitements gÃ©nÃ©raux"), c("pomme de t","Traitements gÃ©nÃ©raux"), 
+                   c("tournesol","Traitements gÃ©nÃ©raux"), c("triticale","Traitements gÃ©nÃ©raux"), 
                    
-                   c("ble tendre","Céréales"), c("orge","Céréales"), c("triticale","Céréales"),
+                   c("ble tendre","CÃ©rÃ©ales"), c("orge","CÃ©rÃ©ales"), c("triticale","CÃ©rÃ©ales"),
                    
-                   c("ble tendre","Céréales à paille"), c("orge","Céréales à paille"), c("triticale","Céréales à paille"),
+                   c("ble tendre","CÃ©rÃ©ales Ã  paille"), c("orge","CÃ©rÃ©ales Ã  paille"), c("triticale","CÃ©rÃ©ales Ã  paille"),
                    
-                   c("ble dur","Jachères et cultures intermédiaires"),c("pois","Jachères et cultures intermédiaires"),
-                   c("pomme de t","Jachères et cultures intermédiaires"), c("ble tendre","Jachères et cultures intermédiaires"),
-                   c("canne a s","Jachères et cultures intermédiaires"), c("colza","Jachères et cultures intermédiaires"),
-                   c("mais ens","Jachères et cultures intermédiaires"), c("mais gr","Jachères et cultures intermédiaires"), 
-                   c("orge","Jachères et cultures intermédiaires"), c("tournesol","Jachères et cultures intermédiaires"), 
-                   c("triticale","Jachères et cultures intermédiaires")
+                   c("ble dur","JachÃ¨res et cultures intermÃ©diaires"),c("pois","JachÃ¨res et cultures intermÃ©diaires"),
+                   c("pomme de t","JachÃ¨res et cultures intermÃ©diaires"), c("ble tendre","JachÃ¨res et cultures intermÃ©diaires"),
+                   c("canne a s","JachÃ¨res et cultures intermÃ©diaires"), c("colza","JachÃ¨res et cultures intermÃ©diaires"),
+                   c("mais ens","JachÃ¨res et cultures intermÃ©diaires"), c("mais gr","JachÃ¨res et cultures intermÃ©diaires"), 
+                   c("orge","JachÃ¨res et cultures intermÃ©diaires"), c("tournesol","JachÃ¨res et cultures intermÃ©diaires"), 
+                   c("triticale","JachÃ¨res et cultures intermÃ©diaires")
                    
 )
 colnames(newlines)<-c("ESPECE","culture")
