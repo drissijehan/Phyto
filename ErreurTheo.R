@@ -131,5 +131,3 @@ p4<-plot_ly(MaxCoefSN, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM
   layout(yaxis = list(type = "log"))
 
 p <- subplot(p1, p2, p3, p4)
-
-
