@@ -30,6 +30,12 @@ BasePK$CoefPK<-BasePK$DosePK/BasePK$SumDosePK
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
 EPHY2<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="ESPECE",by.y="culture")
+#=> ici il faut en fait dupliquer les lignes pour avoir autant de lignes que de cultures dans intituleCulture
+#   donc il faut faire un merge EPHY avec "correspondance" qui met pour chaque "culture" autant de lignes
+#   qu'il y a de 1 dans les autres colonnes => il faut faire une table de correspondance 
+#   avec deux colonnes : cultureEphy culturePK et culture PK répétée autant de fois qu'il y a de 1 dans
+#   les colonnes d'espèces PK
+#   Ca pourrait être le cas de CorrespondanceCultureEphyPk mais je ne suis pas sûr
 
 # aggregation sur les différentes années d'homologuation pour les produits (à terme 
 # pourrait être remplacé par utilisation de la dose retenue l'année de BNVD donnée) 

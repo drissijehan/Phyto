@@ -2,13 +2,18 @@ source("dataSource.R")
 load(file.path(dataFolder,"donnees_R","PK","PK.rda"))
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
-colnames(intituleCulture)<-c("culture","betterave","ble_dur","ble_tendre","canne_a_s","colza","mais_ens","mais_gr",
-                             "orge","pois","pomme_de_t","tournesol","triticale")
+colnames(intituleCulture) <- gsub(" ","_",colnames(intituleCulture))
+
 s<-c()
 ss<-intituleCulture %>%
   split(.$culture) %>%
-  lapply(function(d){d=data.frame(d);
-  if(d$betterave == 1){s<-"betterave"} else if (d$ble_dur==1){s<-"ble dur"} else if (d$ble_tendre==1){s<-"ble tendre"} 
+  lapply(function(d){
+             d=data.frame(d);
+             if(d$betterave == 1){
+                 s<-"betterave"
+             } else if (d$ble_dur==1){
+                 s<-"ble dur"
+             } else if (d$ble_tendre==1){s<-"ble tendre"} 
   else if (d$canne_a_s==1){s<-"canne a s"} else if (d$colza==1){s<-"colza"} else if (d$mais_ens==1){s<-"mais ens"}
   else if (d$mais_gr==1){s<-"mais gr"} else if (d$orge==1){s<-"orge"} else if (d$pois==1){s<-"pois"}
   else if (d$pomme_de_t==1){s<-"pomme de t"} else if (d$tournesol==1){s<-"tournesol"}
