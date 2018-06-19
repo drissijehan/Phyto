@@ -1,15 +1,27 @@
+<<<<<<< HEAD
 #source("dataSource.R")
 library(magrittr)
+=======
+
+
+options(stringsAsFactors=FALSE)
+source("dataSource.R")
+>>>>>>> e16e8ad27b5476d887dfc429f62e17097572dcc8
 load(file.path(dataFolder,"donnees_R","PK","PK.rda"))
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
-colnames(intituleCulture)<-c("culture","betterave","ble_dur","ble_tendre","canne_a_s","colza","mais_ens","mais_gr",
-                             "orge","pois","pomme_de_t","tournesol","triticale")
+colnames(intituleCulture) <- gsub(" ","_",colnames(intituleCulture))
+
 s<-c()
 ss<-intituleCulture %>%
   split(.$culture) %>%
-  lapply(function(d){d=data.frame(d);
-  if(d$betterave == 1){s<-"betterave"} else if (d$ble_dur==1){s<-"ble dur"} else if (d$ble_tendre==1){s<-"ble tendre"} 
+  lapply(function(d){
+             d=data.frame(d);
+             if(d$betterave == 1){
+                 s<-"betterave"
+             } else if (d$ble_dur==1){
+                 s<-"ble dur"
+             } else if (d$ble_tendre==1){s<-"ble tendre"} 
   else if (d$canne_a_s==1){s<-"canne a s"} else if (d$colza==1){s<-"colza"} else if (d$mais_ens==1){s<-"mais ens"}
   else if (d$mais_gr==1){s<-"mais gr"} else if (d$orge==1){s<-"orge"} else if (d$pois==1){s<-"pois"}
   else if (d$pomme_de_t==1){s<-"pomme de t"} else if (d$tournesol==1){s<-"tournesol"}
@@ -79,18 +91,53 @@ newlines <- rbind( c("ble tendre","Blé"),
 colnames(newlines)<-c("ESPECE","culture")
 indices <- c(4,11,20:30,7:9,8:10,10:20)
 CorrespondanceCultureEphyPk<-insertRows(CorrespondanceCultureEphyPk, newlines, indices)
-CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCultureEphyPk$culture%in%"Adjuvants"),]
+CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCultureEphyPk$cultureEphy%in%"Adjuvants"),]
+
+# vérif CorrespondanceCultureEphyPk
+## translate intituleCulture in one line per culture and 1 in other columns
+AddCultureLine <- function(nom){
+    iNewLine <- which(intituleCulture[,nom]==1)
+    out <- data.frame(culturePk=nom,cultureEphy=intituleCulture[iNewLine,"culture"])
+    return(out)
+}
+intituleCulture$culture <- as.character(intituleCulture$culture)
+culturePkEphy <- data.frame(data.table::rbindlist(lapply(names(intituleCulture)[-1],AddCultureLine)))
+
+# check
+expect_equal(sum(intituleCulture[,-1]),nrow(culturePkEphy))
+
+# clean up the values
+culturePkEphy$culturePk <- gsub("_"," ",culturePkEphy$culturePk)
+
+# compararison with CorrespondanceCultureEphyPk
+# reorder to make it order to compare
+culturePkEphy <- culturePkEphy[order(culturePkEphy$culturePk,culturePkEphy$cultureEphy),]
+CorrespondanceCultureEphyPk <- CorrespondanceCultureEphyPk[order(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture),]
+
+# exhaustive check
+set1 <- paste0(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture)
+set2 <- paste0(culturePkEphy$culturePk,culturePkEphy$cultureEphy)
+setdiff(set2,set1)
+#=> Manque "adjuvants" pour toutes les cultures dans CorrespondanceCultureEphyPk
+setdiff(set1,set2)
+#=> CorrespondanceCultureEphyPk a en plus ajouté comme ESPECE, cultureEphy quand il n'y avait pas d'équivalent PK
+#   Facile à ajouter
+toAdd <- setdiff(EPHY$ESPECE,culturePkEphy$cultureEphy)
+toAdd <- data.frame(toAdd,toAdd)
+names(toAdd) <- names(culturePkEphy)
+culturePkEphy <- rbind(culturePkEphy,toAdd)
+#=> discuter avez Rémy lequel est le plus pertinent
 
 stop()
+
 saveAs(CorrespondanceCultureEphyPk,"CorrespondanceCultureEphyPk",file.path(dataFolder,"donnees_R","EPHY"))
 
 ##############################################################################
 
 ############### Table Correspondace EPHY PK #############################
 load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
-culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
-EPHY <- cbind(EPHY,culture)
-EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
+EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="ESPECE",by.y="cultureEphy")
+stop()
 
 AmmEspecePk<- unique(pk[,c("ESPECE","PHYTOPROD")])
 AmmEspecePk<- ChangeNameCol(AmmEspecePk,"PHYTOPROD","AMM")
