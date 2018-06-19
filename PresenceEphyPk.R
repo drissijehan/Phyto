@@ -1,4 +1,5 @@
-source("dataSource.R")
+#source("dataSource.R")
+library(magrittr)
 load(file.path(dataFolder,"donnees_R","PK","PK.rda"))
 ##########################Correspondance Culture EHPHY et PK##############
 load(file.path(dataFolder,"donnees_R","EPHY","intituleCulture.rda"))
@@ -48,7 +49,7 @@ CorrespondanceCultureEphyPk<-rbind(ss,jj)
 rownames(CorrespondanceCultureEphyPk) <- 1:nrow(CorrespondanceCultureEphyPk)
 
 library(rgr)
-insertRows <- function(dat, newlines, indices){
+insertRows <- function(dat, newlines, indices){ 
   lines <- c(1:nrow(dat), indices-0.5)
   dat <- cbind(rbind(dat, newlines), lines=lines)
   dat <- gx.sort.df(~lines, dat)
