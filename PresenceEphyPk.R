@@ -1,3 +1,6 @@
+
+
+options(stringsAsFactors=FALSE)
 source("dataSource.R")
 load(file.path(dataFolder,"donnees_R","PK","PK.rda"))
 ##########################Correspondance Culture EHPHY et PK##############
@@ -83,18 +86,49 @@ newlines <- rbind( c("ble tendre","Blé"),
 colnames(newlines)<-c("ESPECE","culture")
 indices <- c(4,11,20:30,7:9,8:10,10:20)
 CorrespondanceCultureEphyPk<-insertRows(CorrespondanceCultureEphyPk, newlines, indices)
-CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCultureEphyPk$culture%in%"Adjuvants"),]
+CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCultureEphyPk$cultureEphy%in%"Adjuvants"),]
+
+# vérif CorrespondanceCultureEphyPk
+
+AddCultureLine <- function(nom){
+    iNewLine <- which(intituleCulture[,nom]==1)
+    out <- data.frame(culturePK=nom,cultureEphy=intituleCulture[iNewLine,"culture"])
+    return(out)
+}
+intituleCulture$culture <- as.character(intituleCulture$culture)
+cultureEphyPK <- data.frame(data.table::rbindlist(lapply(names(intituleCulture)[-1],AddCultureLine)))
+
+cultureEphyPK$culturePK <- gsub("_"," ",cultureEphyPK$culturePK)
+
+cultureEphyPK <- cultureEphyPK[order(cultureEphyPK$culturePK,cultureEphyPK$cultureEphy),]
+expect_equal(sum(intituleCulture[,-1]),nrow(cultureEphyPK))
+
+CorrespondanceCultureEphyPk <- CorrespondanceCultureEphyPk[order(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture),]
+
+set1 <- paste0(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture)
+set2 <- paste0(cultureEphyPK$culturePK,cultureEphyPK$cultureEphy)
+setdiff(set2,set1)
+#=> Manque "adjuvants" pour toutes les cultures dans CorrespondanceCultureEphyPk
+setdiff(set1,set2)
+#=> CorrespondanceCultureEphyPk a en plus ajouté comme ESPECE, cultureEphy quand il n'y avait pas d'équivalent PK
+#   Facile à ajouter
+toAdd <- setdiff(EPHY$ESPECE,cultureEphyPK$cultureEphy)
+toAdd <- data.frame(toAdd,toAdd)
+names(toAdd) <- names(cultureEphyPK)
+cultureEphyPK <- rbind(cultureEphyPK,toAdd)
+
+#=> discuter avez Rémy le plus pertinent
 
 stop()
+
 saveAs(CorrespondanceCultureEphyPk,"CorrespondanceCultureEphyPk",file.path(dataFolder,"donnees_R","EPHY"))
 
 ##############################################################################
 
 ############### Table Correspondace EPHY PK #############################
 load(file.path(dataFolder,"donnees_R","EPHY","EPHY.rda"))
-culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
-EPHY <- cbind(EPHY,culture)
-EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
+EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="ESPECE",by.y="cultureEphy")
+stop()
 
 AmmEspecePk<- unique(pk[,c("ESPECE","PHYTOPROD")])
 AmmEspecePk<- ChangeNameCol(AmmEspecePk,"PHYTOPROD","AMM")
