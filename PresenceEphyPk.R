@@ -89,35 +89,39 @@ CorrespondanceCultureEphyPk<-insertRows(CorrespondanceCultureEphyPk, newlines, i
 CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCultureEphyPk$cultureEphy%in%"Adjuvants"),]
 
 # vérif CorrespondanceCultureEphyPk
-
+## translate intituleCulture in one line per culture and 1 in other columns
 AddCultureLine <- function(nom){
     iNewLine <- which(intituleCulture[,nom]==1)
     out <- data.frame(culturePK=nom,cultureEphy=intituleCulture[iNewLine,"culture"])
     return(out)
 }
 intituleCulture$culture <- as.character(intituleCulture$culture)
-cultureEphyPK <- data.frame(data.table::rbindlist(lapply(names(intituleCulture)[-1],AddCultureLine)))
+culturePkEphy <- data.frame(data.table::rbindlist(lapply(names(intituleCulture)[-1],AddCultureLine)))
 
-cultureEphyPK$culturePK <- gsub("_"," ",cultureEphyPK$culturePK)
+# check
+expect_equal(sum(intituleCulture[,-1]),nrow(cultureEphyPk))
 
-cultureEphyPK <- cultureEphyPK[order(cultureEphyPK$culturePK,cultureEphyPK$cultureEphy),]
-expect_equal(sum(intituleCulture[,-1]),nrow(cultureEphyPK))
+# clean up the values
+cultureEphyPk$culturePK <- gsub("_"," ",cultureEphyPk$culturePK)
 
+# compararison with CorrespondanceCultureEphyPk
+# reorder to make it order to compare
+cultureEphyPk <- cultureEphyPk[order(cultureEphyPk$culturePK,cultureEphyPk$cultureEphy),]
 CorrespondanceCultureEphyPk <- CorrespondanceCultureEphyPk[order(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture),]
 
+# exhaustive check
 set1 <- paste0(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture)
-set2 <- paste0(cultureEphyPK$culturePK,cultureEphyPK$cultureEphy)
+set2 <- paste0(cultureEphyPk$culturePK,cultureEphyPk$cultureEphy)
 setdiff(set2,set1)
 #=> Manque "adjuvants" pour toutes les cultures dans CorrespondanceCultureEphyPk
 setdiff(set1,set2)
 #=> CorrespondanceCultureEphyPk a en plus ajouté comme ESPECE, cultureEphy quand il n'y avait pas d'équivalent PK
 #   Facile à ajouter
-toAdd <- setdiff(EPHY$ESPECE,cultureEphyPK$cultureEphy)
+toAdd <- setdiff(EPHY$ESPECE,cultureEphyPk$cultureEphy)
 toAdd <- data.frame(toAdd,toAdd)
-names(toAdd) <- names(cultureEphyPK)
-cultureEphyPK <- rbind(cultureEphyPK,toAdd)
-
-#=> discuter avez Rémy le plus pertinent
+names(toAdd) <- names(cultureEphyPk)
+cultureEphyPk <- rbind(cultureEphyPk,toAdd)
+#=> discuter avez Rémy lequel est le plus pertinent
 
 stop()
 
