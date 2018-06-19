@@ -92,7 +92,7 @@ CorrespondanceCultureEphyPk<-CorrespondanceCultureEphyPk[-which(CorrespondanceCu
 ## translate intituleCulture in one line per culture and 1 in other columns
 AddCultureLine <- function(nom){
     iNewLine <- which(intituleCulture[,nom]==1)
-    out <- data.frame(culturePK=nom,cultureEphy=intituleCulture[iNewLine,"culture"])
+    out <- data.frame(culturePk=nom,cultureEphy=intituleCulture[iNewLine,"culture"])
     return(out)
 }
 intituleCulture$culture <- as.character(intituleCulture$culture)
@@ -102,16 +102,16 @@ culturePkEphy <- data.frame(data.table::rbindlist(lapply(names(intituleCulture)[
 expect_equal(sum(intituleCulture[,-1]),nrow(culturePkEphy))
 
 # clean up the values
-culturePkEphy$culturePK <- gsub("_"," ",culturePkEphy$culturePK)
+culturePkEphy$culturePk <- gsub("_"," ",culturePkEphy$culturePk)
 
 # compararison with CorrespondanceCultureEphyPk
 # reorder to make it order to compare
-culturePkEphy <- culturePkEphy[order(culturePkEphy$culturePK,culturePkEphy$cultureEphy),]
+culturePkEphy <- culturePkEphy[order(culturePkEphy$culturePk,culturePkEphy$cultureEphy),]
 CorrespondanceCultureEphyPk <- CorrespondanceCultureEphyPk[order(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture),]
 
 # exhaustive check
 set1 <- paste0(CorrespondanceCultureEphyPk$ESPECE,CorrespondanceCultureEphyPk$culture)
-set2 <- paste0(culturePkEphy$culturePK,culturePkEphy$cultureEphy)
+set2 <- paste0(culturePkEphy$culturePk,culturePkEphy$cultureEphy)
 setdiff(set2,set1)
 #=> Manque "adjuvants" pour toutes les cultures dans CorrespondanceCultureEphyPk
 setdiff(set1,set2)

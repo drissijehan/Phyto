@@ -1,7 +1,7 @@
 source("dataSource.R") # doit contenir quelque chose du genre dataFolder <- "~/data"
 folderIn <- file.path(dataFolder,"donnees_R")
 folderOut <- file.path(dataFolder,"donnees_R","PK")
-load(file.path(folderIn,"PK","PK.rda"))
+load(file.path(folderIn,"PK","PK.rda")) # pk
 load(file.path(folderIn,"EPHY","EPHY.rda"))
 load(file.path(folderIn,"EPHY","CorrespondanceCultureEphyPk.rda"))
 library(plyr)
@@ -29,27 +29,32 @@ expect_equal(nrow(unique(SommeDosePK[,c("PHYTOPROD","CODE_REG")])),
 BasePK$CoefPK<-BasePK$DosePK/BasePK$SumDosePK
 BasePK <- ChangeNameCol(BasePK,"PHYTOPROD","AMM")
 ##CoefDH (produit, culture)
-EPHY2<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="ESPECE",by.y="culture")
+EPHY2<- merge(EPHY,culturePkEphy, by.x="ESPECE",by.y="cultureEphy",all.x=TRUE)
 #=> ici il faut en fait dupliquer les lignes pour avoir autant de lignes que de cultures dans intituleCulture
-#   donc il faut faire un merge EPHY avec "correspondance" qui met pour chaque "culture" autant de lignes
-#   qu'il y a de 1 dans les autres colonnes => il faut faire une table de correspondance 
-#   avec deux colonnes : cultureEphy culturePK et culture PK répétée autant de fois qu'il y a de 1 dans
-#   les colonnes d'espèces PK
-#   Ca pourrait être le cas de CorrespondanceCultureEphyPk mais je ne suis pas sûr
 
 # aggregation sur les différentes années d'homologuation pour les produits (à terme 
 # pourrait être remplacé par utilisation de la dose retenue l'année de BNVD donnée) 
 # mais aussi aggrégation sur les différents "Intitule", donc les différentes cibles
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median,na.rm=TRUE)
 DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
-
 SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum,na.rm=TRUE)
-
 SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DH","SumDH")
 BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
 BaseDH$CoefDH<-BaseDH$DH/BaseDH$SumDH
 ##CoefPK (produit, culture, region)
 Base<-merge(BasePK,BaseDH,by=c("AMM","ESPECE"),all.x=TRUE)
+
+# est-ce qu'il ne faut pas plutôt utiliser l'espèce pk comme unité d'aggrégation?
+DHCulture2<- aggregate(Dose.d.application.retenue~AMM+culturePk, data= EPHY2, median,na.rm=TRUE)
+DHCulture2<- ChangeNameCol(DHCulture2,"Dose.d.application.retenue","DH")
+SommeDHCulture2<-aggregate(DH~AMM,data = DHCulture2,sum,na.rm=TRUE)
+SommeDHCulture2<- ChangeNameCol(SommeDHCulture2, "DH","SumDH")
+BaseDH2<-merge(DHCulture2, SommeDHCulture2, by="AMM")
+BaseDH2$CoefDH<-BaseDH2$DH/BaseDH2$SumDH
+##CoefPK (produit, culture, region)
+Base2<-merge(BasePK,BaseDH2,by.x=c("AMM","ESPECE"),by.y=c("AMM","culturePk"),all.x=TRUE)
+# Base <- Base2
+
 
 # check no losses since SumDosePK was computed
 part1 <- aggregate(Base$DosePK,by=list(Base$AMM,Base$CODE_REG),sum)
@@ -63,15 +68,23 @@ Base$Coef<-Base$CoefPK/Base$CoefDH
 Base[which(Base$AMM=="2000018"),]
 #=> Ok, sumDosePK est bien la somme des DosePK pour la région
 
-
+Count(is.na(Base$DH))
+#=> 1765, mieux qu'un quarr (avant) mais encore beaucoup
 
 table(Base[which(is.na(Base$DH)),"ESPECE"])
 #=> ca fait beaucoup, par exemple pour le colza, à étudier
+#   nettement mieux avec la nouvelle table, mais encore beaucoup pourle triticale, l'orge et le blé tendre
 
 table(Base[which(is.na(Base$DH)&Base$CODE_REG!="00"),"ESPECE"])
 #=> même à l'échelle régionale ça fait beaucoup de produits avec au moins 3 applications
 #   pour lesquelles il n'y a pas de DH connue
 
+# étude de cas
+head(Base[which(is.na(Base$DH)),])
+#=>  2000045 est du RANMAN, il a été retiré en 2015 mais je ne le trouve pas dans les feuilles excel
+#    2014 et 2013. Par contre il y a du RANMAN TOP, avec AMM 2110012 qui est bien autorisé sur pommes de terre
+#    encore aujourd'hui. Peut-être qu'il faudrait aussi sortir les noms de l'enquête PK
+stop()
 
 ##Max (produit,region)
 MaxCoef<- aggregate(Coef~AMM+CODE_REG, data = Base, max,na.rm=TRUE)
