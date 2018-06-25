@@ -176,9 +176,13 @@ CoefPK_cp %>%
   dbplot_histogram(Coef)
 
 CoefPK_cp<-as.data.frame(CoefPK_cp)
+
+#=> les valeurs NaN dans les coef duent à: coef DH est NA ou surface est NA ( des codes postaux qui ne sont pas presents dans info_ilot)
+
 save(CoefPK_cp,file=file.path(dataFolder,"donnees_R/fichiersOdr/CoefPK_cp.rda"))
 
 MaxCoefCP<- aggregate(Coef~PHYTOPROD+Code_postal+CODE_DEPT+CODE_REG, data = CoefPK_cp, max)
+save(MaxCoefCP,file=file.path(dataFolder,"donnees_R/fichiersOdr/MaxCoefCP.rda"))
 ##Hist
 plot_ly(MaxCoefCP, x = ~ Coef, type = "histogram", text = ~paste("AMM:", AMM, "<br>Region" , CODE_REG,"<br>Departement" , CODE_DEPT,"<br>Code Postal" , Code.postal.acheteur), 
         name= "Erreurs Code Postal") %>%
