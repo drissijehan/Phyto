@@ -12,7 +12,7 @@ NumToNChar <- function(num,nChar=2){
     return(out)
 }
 
-dataFolder <- "/media/5AE1EC8814E5040E" # Corentin
+dataFolder <- "~/data" # Corentin
 folderIn <- file.path(dataFolder,"carto_init","bnvdAcheteur")
 folderOut <- file.path(dataFolder,"donnees_R","BNVD")
 
@@ -67,5 +67,5 @@ saveAs(BNVD5,"BNVD",folderOut)
 BNVD_2014<-BNVD5[BNVD5$Annee_BNVD == "2014",]
 expect_equal(nrow(BNVD_2014),nrow(bnvd[["2014"]]))
 
-saveAs(BNVD_2014,"BNVD_2014",folderOut)
+#saveAs(BNVD_2014,"BNVD_2014",folderOut)
 

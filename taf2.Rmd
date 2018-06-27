@@ -16,13 +16,13 @@ library(reshape2)
 
 ```
 ***************
-#`Quelle fiabilité des concentrations de substances  `{style="color: #b00;"}
-#`dans les produits à partir des différents  `{style="color: #b00;"}
+#`Quelle fiabilite des concentrations de substances  `{style="color: #b00;"}
+#`dans les produits a partir des differents  `{style="color: #b00;"}
 #`enregistrements de vente dans la BNVD ? `{style="color: #b00;"}
 **************
 
 *************
-##`La concentration de chaque produit pour chaque année,  `{style="color: #003ebb;"}  
+##`La concentration de chaque produit pour chaque annee,  `{style="color: #003ebb;"}  
 ##`code postal et substance:  `{style="color: #003ebb;"}  
 *************
 
@@ -46,7 +46,7 @@ df2<- merge(df_mean,df_sd,by=c("AMM","Substance"))
 df2$CoefVar <- df2$Sd / df2$Mean
 ```
 
-### Homogénéité des concentrations de substance par produits dans la BNVD
+### Homogeneite des concentrations de substance par produits dans la BNVD
 
 ```{r,rows.print=7}
 df2
@@ -58,13 +58,13 @@ plot_ly(df2, x = ~ CoefVar, type = "histogram")  %>%
   layout(yaxis = list(type = "log"))
 ```
 
-On a **481** observations ignorées, ceci est expliqué par **438** observations où on a Sd==NA (une seule vente pour le couple AMM+Substance), et **61** observations où la moyenne est nulle donc le ratio NA. Enfin, **18** observations où Sd==NA et Mean==0. Alors, on trouve bien: **481=438+61-18**.
+On a **481** observations ignorees, ceci est expliqué par **438** observations ou on a Sd==NA (une seule vente pour le couple AMM+Substance), et **61** observations ou la moyenne est nulle donc le ratio NA. Enfin, **18** observations ou Sd==NA et Mean==0. Alors, on trouve bien: **481=438+61-18**.
 
-Combien de produits avec un coefficient de variation supérieur à 10%.
+Combien de produits avec un coefficient de variation superieur a 10%.
 ```{r}
 length(unique(df2[which(df2$CoefVar>0.1),]$AMM))
 ```
-Cela représente 5/10000 de la quantité totale de produit présente dans la BNVD. 
+Cela represente 5/10000 de la quantite totale de produit presente dans la BNVD. 
 
 ```{r, include=FALSE}
 load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Presence_EBP.rda"))
@@ -75,13 +75,13 @@ load(file.path(dataFolder,"donnees_R","bnvdAcheteur","Presence_EBP.rda"))
 *************
 
 
-###Table des présences des produits dans les bases BNVD, EPHY et PK avec DH mediane et composition 
+###Table des presences des produits dans les bases BNVD, EPHY et PK avec DH mediane et composition 
 ```{r  rows.print=7, paged.print= TRUE}
 Presence_EBP
 ```
 
 Attention NA:
-     *  Dose Homologué == NA --> AMM n'est pas présent dans EPHY ou Dose Homologuée (Dose d'application retenue) est NA à la base dans EPHY.
+     *  Dose Homologué == NA --> AMM n'est pas présent dans EPHY ou Dose Homologuee (Dose d'application retenue) est NA a la base dans EPHY.
      *  Composition == NA --> AMM n'est pas présent dans BNVD (propriétés testées dans df.R).
 
 
@@ -120,19 +120,19 @@ p
 ```
 Note: 
 Il y a 1822 produits présents dans EPHY mais pas utilisés, c'est compréhensible car EPHY sur 2008-2017 alors que BNVD est sur 2013-2017 et PK 2014 seulement. 
-800 produits que dans la BNVD, probablement lié aux catégories manquantes dans EPHY (adjuvants, etc.) et limitation de PK par rapport à la BNVD (seulement 2014 et seulement grandes cultures).
-1942 produits manquant dans PK pouvant être des produits peu utilisés mais aussi des produits qui ne sont pas utilisés en 2014 ou pas en grandes cultures). 
+800 produits que dans la BNVD, probablement lié aux catégories manquantes dans EPHY (adjuvants, etc.) et limitation de PK par rapport é la BNVD (seulement 2014 et seulement grandes cultures).
+1942 produits manquant dans PK pouvant étre des produits peu utilisés mais aussi des produits qui ne sont pas utilisés en 2014 ou pas en grandes cultures). 
 7 produits dans PK non homologués, non vendus, probablement des erreurs de saisies d'AMM dans PK
-22 produits dans EPHY et PK mais pas dans BNVD, peut-être des erreurs de saisies dans PK qui seraient des adjuvants donc pas dans EPHY (à véririfier?). 
-Les 141 dans BNVD et PK sans être dans EPHY sont notamment des adjuvants (vérifié à la main). 
+22 produits dans EPHY et PK mais pas dans BNVD, peut-étre des erreurs de saisies dans PK qui seraient des adjuvants donc pas dans EPHY (é véririfieré). 
+Les 141 dans BNVD et PK sans étre dans EPHY sont notamment des adjuvants (vérifié é la main). 
 
 En conclusion peu de produits sont présents dans les trois tables (`612/4399`), et notamment beaucoup de produits absents dans PK GC 2014. 
 
 
 ***************
-#`Quelle est la fréquence à laquelle une culture  `{style="color: #b00;"}
-#`est mentionnée pour une AMM sans être mentionnée  `{style="color: #b00;"}
-#`pour cette culture dans PK ? `{style="color: #b00;"}
+#`Quelle est la frequence a laquelle une culture  `{style="color: #b00;"}
+#`est mentionnee pour une AMM sans etre mentionnee  `{style="color: #b00;"}
+#`pour cette culture dans PK é `{style="color: #b00;"}
 **************
 
 
@@ -199,7 +199,7 @@ plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide'
   layout(yaxis = list(title = 'Count'), barmode = 'stack')
 ```
 
-Domination claire des Insecticides, Herbicides et fongicides, sans variation très nette des proportions entre les différentes classes de présence dans les bases, sauf pour les produits qui sont dans PK mais pas dans la BNBD (--P et E-P) où les autres types de produits sont sur-représentés (bizarre que ce soit simplement des erreurs d'entrée vu que ça touche spécifiquement les taupicides et bactéricides notamment.  
+Domination claire des Insecticides, Herbicides et fongicides, sans variation trés nette des proportions entre les différentes classes de présence dans les bases, sauf pour les produits qui sont dans PK mais pas dans la BNBD (--P et E-P) oé les autres types de produits sont sur-représentés (bizarre que ce soit simplement des erreurs d'entrée vu que éa touche spécifiquement les taupicides et bactéricides notamment.  
 
 *************
 ##`Répartition des produits présents ou pas dans PK par catégorie  `{style="color: #003ebb;"}
@@ -228,7 +228,7 @@ plot_ly(dat, x = ~barplot, y = ~Fongicide.Freq, type = 'bar', name = 'Fongicide'
 ```
 
 
-Ce qui manque principalement dans PK semble être des insecticides et des fongicides.
+Ce qui manque principalement dans PK semble étre des insecticides et des fongicides.
 
 
 *************
@@ -286,22 +286,22 @@ plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicide') %
 
 
 
-Warnings: correspond aux observations pour lesquelles il n'y a pas de volumes parce qu'ils ne sont pas dans la BNVD (explique barres manquantes, vérifier pq certaines barres vraiment manquantes et d'autres à zéro). 
+Warnings: correspond aux observations pour lesquelles il n'y a pas de volumes parce qu'ils ne sont pas dans la BNVD (explique barres manquantes, vérifier pq certaines barres vraiment manquantes et d'autres é zéro). 
 
-Conclusion: PK GC documente la majorité des quantité vendues étiquetées GC ou TC dans ephy, malgré les manques importants soulignés précédemment. Cela signifie que les utilisations de produits en grandes cultures sont dominantes dans les ventes (`ratio (-BP+EBP)/total`). Mais une part non négligeable `ratio (-B- + -BP)/(total)`) de produit est vendue sans être dans EPHY (adjuvants, etc.? bizarre quand même que la catégorie soit documentée, en tout cas fongicides très sur représentés, explorer ce que ça représente car c'est presque la moitié des fongicides) et une autre part importante (`ratio (EB-)/total`) est probablement utilisée ailleurs qu'en grandes cultures. 
+Conclusion: PK GC documente la majorité des quantité vendues étiquetées GC ou TC dans ephy, malgré les manques importants soulignés précédemment. Cela signifie que les utilisations de produits en grandes cultures sont dominantes dans les ventes (`ratio (-BP+EBP)/total`). Mais une part non négligeable `ratio (-B- + -BP)/(total)`) de produit est vendue sans étre dans EPHY (adjuvants, etc.é bizarre quand méme que la catégorie soit documentée, en tout cas fongicides trés sur représentés, explorer ce que éa représente car c'est presque la moitié des fongicides) et une autre part importante (`ratio (EB-)/total`) est probablement utilisée ailleurs qu'en grandes cultures. 
 
 Pour le vérifier on pose la question suivante :
 
-Q: Y-a-t il des produits GC ou TC, usage pro, dans Ephy dont les ventes sont importantes sans être documentées dans PK? 
+Q: Y-a-t il des produits GC ou TC, usage pro, dans Ephy dont les ventes sont importantes sans étre documentées dans PKé 
 
-Ajouter même graphique mais en gardant tous les produits qui ne sont pas GC ou TC dans Ephy (même si on perd encore des barres). (mettre ce graph en premier).
-Ajouter ratio de la nouvelle barre EB- par rapport à (EB- + EBP): le ratio des quantités vendus à priori sur grandes cultures qui ne sont pas documentées dans PK. Voir ajouter aussi ce ratio en se restreingnant à GC et usage pro (pas TC). 
+Ajouter méme graphique mais en gardant tous les produits qui ne sont pas GC ou TC dans Ephy (méme si on perd encore des barres). (mettre ce graph en premier).
+Ajouter ratio de la nouvelle barre EB- par rapport é (EB- + EBP): le ratio des quantités vendus é priori sur grandes cultures qui ne sont pas documentées dans PK. Voir ajouter aussi ce ratio en se restreingnant é GC et usage pro (pas TC). 
 
-En ce qui concerne la répartition des catégories de produits dans les bases. Les herbicides sont sur-représentés dans les EBP suggèrant que les grandes cultures représentent de très loin la majorité des usages d'herbicides. 
+En ce qui concerne la répartition des catégories de produits dans les bases. Les herbicides sont sur-représentés dans les EBP suggérant que les grandes cultures représentent de trés loin la majorité des usages d'herbicides. 
 
-Proportions à revoir quand on aura que Ephy GC+TC
+Proportions é revoir quand on aura que Ephy GC+TC
 
-Ajouter même graphique mais en se limitant aux produits qui ne sont documentés dans Ephy **que** pour GC et usage pro, pas TC ni autres cultures. 
+Ajouter méme graphique mais en se limitant aux produits qui ne sont documentés dans Ephy **que** pour GC et usage pro, pas TC ni autres cultures. 
 
 
 ###Les Produits restreints de EPHY GC, TC et usage professionnel, BNVD et PK, et présents que dans BNVD :
