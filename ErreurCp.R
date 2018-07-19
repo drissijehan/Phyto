@@ -18,7 +18,7 @@ library(dplyr)
 iris_tbl <- sdf_copy_to(sc, iris)
 src_tbls(sc)
 
-spark_write_table(iris_tbl,"iris_spark")
+#spark_write_table(iris_tbl,"iris_spark")
 spark_read_parquet(sc,"iris_spark","/home/jehandrissi/spark-warehouse/iris_spark/")
 
 dataFolder <- "/opt"
@@ -48,7 +48,7 @@ Commune_Surface<- info_ilot_tbl %>%
   select(ilot, surf_tot_ilot, com_siege)
 
 Com_Cp_Surf_tbl<-CP_Commune %>% 
-  left_join(Commune_Surface, by=c("Code_commune_INSEE" = "com_siege"))
+  inner_join(Commune_Surface, by=c("Code_commune_INSEE" = "com_siege"))
 
 #-> surface par ilot avec info commune et cp
 
@@ -81,7 +81,7 @@ correspondanceCultureOccsol <- read_excel("data/carto_init/fichiersOdr/correspon
 DoseCP<- merge(DoseCP, correspondanceCultureOccsol, by="ESPECE", all.x = TRUE)
 gc()
 DoseCP_tbl <- copy_to(sc, DoseCP)
-spark_write_table(DoseCP_tbl,"dosecp")
+#spark_write_table(DoseCP_tbl,"dosecp")
 #spark_read_parquet(sc,"DoseCp_tbl","/home/jehandrissi/spark-warehouse/dosecp/")
 #-> DosePK(p,g,c) (Dose (d'après PK à l'échelle régionale) par produit, culture et code postal
 
@@ -101,7 +101,7 @@ spark_write_table(ilot_gp_culture_tbl,"ilot_gp_culture")
 ilot_occ_sol<- ilot_gp_culture_tbl %>%
   select(ilot, occ_sol)
 surf_cp_occsol_tbl <- Com_Cp_Surf_tbl %>%
-  left_join(ilot_occ_sol, by="ilot")
+  inner_join(ilot_occ_sol, by="ilot")
 
 #-> surface et occ_sol par ilot, avec information sur code postal (retire identifiant de l'ilot)
 
@@ -125,12 +125,12 @@ surf_espece_tbl <- surf_cp_occsol_tbl %>%
 #-> surface(g,c) (=surface par code postal et par culture)
 
 BasePKS_tbl <- DoseCP_tbl %>%
-  left_join(surf_espece_tbl, by=c("ESPECE","Code_postal"))
+  inner_join(surf_espece_tbl, by=c("ESPECE","Code_postal"))
 #-> DosePK(p,g,c), avec les surfaces par code_postal et par culture
-SommeCulture<- BasePKS_tbl %>%
+BasePKS_tbl<- BasePKS_tbl %>%
   mutate(DoseSurf= DosePk*surface)
 
-SommeCulture_tbl <- SommeCulture %>%
+SommeCulture_tbl <- BasePKS_tbl %>%
   group_by(PHYTOPROD, Code_postal,CODE_DEPT,CODE_REG) %>%
   summarise(doseSumSurf = sum(DoseSurf))
 #-> sum_c (DosePK(p,g,c)*surface(g,c))
@@ -140,29 +140,43 @@ BasePKS_tbl <- BasePKS_tbl %>%
 #-> DosePK(p,g,c) avec sum_c(DosePK(p,g,c)*surface(g,c)) correspondante
 
 BasePKS_tbl <- BasePKS_tbl %>%
-  mutate(CoefPk = (DosePk /doseSumSurf))
+  mutate(CoefPk = (DoseSurf /doseSumSurf))
 #-> coefficients finaux !!!a thousand kisses deep
+
+spark_write_table(BasePKS_tbl,"coefpk_amm_cp")
+coefpk_amm_cp<-spark_read_parquet(sc,"coefpk_cp","/home/jehandrissi/spark-warehouse/coefpk_amm_cp/")
+coefpk_amm_cp<-as.data.frame(coefpk_amm_cp)
+save(coefpk_amm_cp,file=file.path(dataFolder,"donnees_R/fichiersOdr/coefpk_amm_cp.rda"))
 
 ##CoefDH (produit, culture)
 load("~/data/donnees_R/EPHY/EPHY.rda")
 CorrespondanceCultureEphyPk <- read_excel("data/carto_init/ephy/EPHY/CorrespondanceCultureEphyPk.xlsx")
 
 library(spatDataManagement)
-culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
-EPHY <- cbind(EPHY,culture)
-EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
+#culture <- sapply(strsplit(as.vector(EPHY$Intitule),"*",fixed = TRUE), function(x) x[1])
+#EPHY <- cbind(EPHY,culture)
+#EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by="culture")
+EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="intituleCulture",by.y="culture",all.x=TRUE)
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
 DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
-SommeDHCulture<-aggregate(DH~AMM,data = DHCulture,sum)
-BaseDH<-merge(DHCulture, SommeDHCulture, by="AMM")
-BaseDH$CoefDH<-BaseDH$DH.x/BaseDH$DH.y
-BaseDH$DH.x<-NULL
-BaseDH$DH.y<-NULL
+
+load(file.path("~/data/donnees_R","Agreste","AGRESTE_2014.rda"))
+AGRESTE_2014<-AGRESTE_2014[AGRESTE_2014$CODE_REG!="00",]
+DHCulture<-merge(unique(DHCulture),unique(AGRESTE_2014), by="ESPECE")
+DHCulture$DHSurf<-DHCulture$DH*DHCulture$Area
+
+SommeDHCulture<-aggregate(DHSurf~AMM+CODE_REG,data = DHCulture,sum, na.rm=TRUE)
+SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DHSurf","SumDHSurf")
+SommeDHCulture<-SommeDHCulture[SommeDHCulture$AMM!="",]
+BaseDH<-merge(DHCulture, SommeDHCulture, by=c("AMM","CODE_REG"))
+BaseDH$CoefDH<-BaseDH$DHSurf/BaseDH$SumDHSurf
+BaseDH$DHSurf<-NULL
+BaseDH$SumDHSurf<-NULL
 BaseDH_tbl <- copy_to(sc, BaseDH)
 
 #coefpk/coefdh
 BaseS_tbl <- BasePKS_tbl %>%
-  left_join(BaseDH_tbl, by=c("PHYTOPROD" = "AMM", "ESPECE")) %>%
+  left_join(BaseDH_tbl, by=c("PHYTOPROD" = "AMM", "ESPECE","CODE_REG")) %>%
   mutate(Coef= CoefPk/CoefDH)
 
 #BaseS <- collect(BaseS_tbl)
@@ -170,12 +184,13 @@ spark_write_table(BaseS_tbl,"coefpk_cp")
 #spark_write_csv(BaseS_tbl, "/home/jehandrissi/spark-warehouse/CoefPK_CP/")
 #db_drop_table(sc, "___") --> remove data from spark
 CoefPK_cp<-spark_read_parquet(sc,"coefpk_cp","/home/jehandrissi/spark-warehouse/coefpk_cp/")
-print(CoefCp, n=50, width = Inf)
+print(CoefPK_cp, n=50, width = Inf)
 
 CoefPK_cp %>% 
   dbplot_histogram(Coef)
 
 CoefPK_cp<-as.data.frame(CoefPK_cp)
+
 
 #=> les valeurs NaN dans les coef duent à: coef DH est NA ou surface est NA ( des codes postaux qui ne sont pas presents dans info_ilot)
 
