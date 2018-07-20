@@ -1,5 +1,6 @@
 dataFolder<-"~/data"
 load(file=file.path(dataFolder,"donnees_R/fichiersOdr/CoefPK_cp.rda"))
+load("C:/Users/Utilisateur/Downloads/coefpk_amm_cp.rda")
 CoefPK_cp<-na.omit(CoefPK_cp)
 load(file=file.path(dataFolder,"donnees_R/EPHY/EPHY.rda"))
 load(file=file.path(dataFolder,"donnees_R/bnvdAcheteur/BNVD_2014.rda"))
@@ -28,62 +29,52 @@ areas_bourville<-merge(areas_bourville2014,laposte_hexasmal[,c("Code_commune_INS
 areas_bourville<-aggregate(cbind(s_bv,dose,qte_produit)~no_amm+libelle_occup+Code_postal, data = areas_bourville, sum)
 areas_bourville$QuantiteBv<-areas_bourville$dose*areas_bourville$s_bv*10^(-4)
 ###Code Postal commune
-#areas_bourville<-merge(areas_bourville,unique(laposte_hexasmal[,c("Code_commune_INSEE","Code_postal")]), by.x = "code_insee_communes_resp", by.y = "Code_commune_INSEE")
+#areas_bourville<-merge(areas_bourville,unsique(laposte_hexasmal[,c("Code_commune_INSEE","Code_postal")]), by.x = "code_insee_communes_resp", by.y = "Code_commune_INSEE")
 #Ajouter correspondance Espece
 library(readxl)
 correspondanceCultureBourvillePk <- read_excel(file.path(dataFolder,"carto_init/fichiersOdr/correspondanceCultureBourvillePk.xlsx"))
 areas_bourville<- merge(areas_bourville, correspondanceCultureBourvillePk, by= "libelle_occup")
 #Ajouter Coef cp
 areas_bourville<-merge(unique(areas_bourville),unique(CoefPK_cp[,c("Code_postal","CODE_REG","ESPECE","PHYTOPROD","CoefPk", "CoefDH")]), by.x = c("Code_postal","ESPECE","no_amm"),by.y = c("Code_postal","ESPECE","PHYTOPROD"))
+#areas_bourville<-merge(areas_bourville, unique(coefpk_amm_cp[, c("Code_postal", "CODE_REG", "ESPECE","PHYTOPROD", "CoefPk", "CoefDH")]), by.x = c("Code_postal","ESPECE","no_amm"),by.y = c("Code_postal","ESPECE","PHYTOPROD"))
 #Ajouter quantite BNVD
 areas_bourville<-merge(areas_bourville,unique(BNVD_2014[,c("Code.postal.acheteur","CODE_REG","AMM","Quantite.produit")]), by.x = c("Code_postal","no_amm","CODE_REG"), by.y = c("Code.postal.acheteur","AMM","CODE_REG"))
+#Les surfaces sont en m²
 areas_bourville$QuantitePk<-areas_bourville$CoefPk*areas_bourville$s_bv*areas_bourville$Quantite.produit*10^(-4)
 areas_bourville<-areas_bourville[areas_bourville$s_bv!=0,]
 areas_bourville<-areas_bourville[areas_bourville$CoefPk!=0,]
 #Ajouter les noms des produits et categories
 areas_bourville<-merge(areas_bourville, unique(EPHY[,c("AMM","Nom.du.produit", "Fonction")]), by.x = "no_amm", by.y = "AMM", all.x = TRUE)
-
-areas_bourville$rapport_bv_pk<-areas_bourville$qte_produit/areas_bourville$QuantitePk
+#Calculer quantite par CoefDH
+areas_bourville$QuantiteDH<- areas_bourville$CoefDH*areas_bourville$s_bv*areas_bourville$Quantite.produit*10^(-4)
 
 #avec la quantiteBv= dose*surface
 library(plotly)
-areas_bourville %>%
-  plot_ly(x = ~QuantiteBv) %>% 
-  add_markers(y = ~QuantitePk, text = ~paste( 'Produit:', Nom.du.produit)) %>% 
-  add_lines(x = ~QuantiteBv, y = ~QuantiteBv)
-#avec la quantiteBv= qte_produit (dans areas bourville)
-areas_bourville %>%
-  plot_ly(x = ~qte_produit) %>% 
-  add_markers(y = ~QuantitePk, color=~ESPECE, colors="Set1", text = ~paste( 'Produit:', Nom.du.produit, '<br>AMM:', no_amm, '<br>Code pstal::', Code_postal, '<br>Categorie:', Fonction)) %>% 
-  add_lines(x = ~qte_produit, y = ~qte_produit)
-
-plot_ly(areas_bourville[areas_bourville$rapport_bv_pk<15,], x=~rapport_bv_pk)
-
-#La droite de regression en dehors des valeurs aberrantes
+QuantiteBourville<-areas_bourville$QuantiteBv
+#x=QuantiteBV , y=QuantitePK
 fit <- lm(QuantitePk ~ qte_produit, data = areas_bourville)
-QuantiteBourville<-areas_bourville$qte_produit
 p<-areas_bourville %>% 
   plot_ly(x = ~QuantiteBourville) %>% 
   add_markers(y = ~QuantitePk, color=~ESPECE, colors="Set1", text = ~paste( 'Produit:', Nom.du.produit, '<br>AMM:', no_amm, '<br>Code postal:', Code_postal, '<br>Categorie:', Fonction)) %>% 
-  add_lines(x = ~QuantiteBourville, y = fitted(fit), name='Fitted') %>%
+ 
   add_lines(x = ~QuantiteBourville, y = ~QuantiteBourville, name='Bisectrice')
 
-
-areas_bourville$QuantiteDH<- areas_bourville$CoefDH*areas_bourville$s_bv*areas_bourville$Quantite.produit*10^(-4)
+#x=QuantiteBv, y=QuantiteDH
 
 fitdh <- lm(QuantiteDH ~ qte_produit, data = areas_bourville)
 QuantiteBourville<-areas_bourville$qte_produit
 p2<-areas_bourville %>% 
   plot_ly(x = ~QuantiteBourville) %>% 
-  add_markers(y = ~QuantiteDH, color=~ESPECE, colors="Set1", text = ~paste( 'Produit:', Nom.du.produit, '<br>AMM:', no_amm, '<br>Commune:', code_insee_communes_resp, '<br>Categorie:', Fonction)) %>% 
+  add_markers(y = ~QuantiteDH, color=~ESPECE, colors="Set1", text = ~paste( 'Produit:', Nom.du.produit, '<br>AMM:', no_amm, '<br>Code postal:', Code_postal, '<br>Categorie:', Fonction)) %>% 
   add_lines(x = ~QuantiteBourville, y = fitted(fitdh), name='Fitted') %>%
   add_lines(x = ~QuantiteBourville, y = ~QuantiteBourville, name='Bisectrice')
 
-
+# x= quantiteDH , y =QuantitePK
+fitpkdh<- lm(QuantitePk~QuantiteDH, data = areas_bourville)
 p3<-areas_bourville %>% 
   plot_ly(x = ~QuantiteDH) %>% 
-  add_markers(y = ~QuantitePk, color=~ESPECE, colors="Set1", text = ~paste( 'Produit:', Nom.du.produit, '<br>AMM:', no_amm, '<br>Commune:', code_insee_communes_resp, '<br>Categorie:', Fonction)) %>% 
-  
+  add_markers(y = ~QuantitePk, color=~ESPECE, colors="Set1", text = ~paste( 'Produit:', Nom.du.produit, '<br>AMM:', no_amm, '<br>Categorie:', Fonction)) %>% 
+
   add_lines(x = ~QuantiteDH, y = ~QuantiteDH, name='Bisectrice')
 
 ##########################################################################################################################

@@ -160,30 +160,29 @@ EPHY<- merge(EPHY,CorrespondanceCultureEphyPk, by.x="intituleCulture",by.y="cult
 DHCulture<- aggregate(Dose.d.application.retenue~AMM+ESPECE, data= EPHY, median)
 DHCulture<- ChangeNameCol(DHCulture,"Dose.d.application.retenue","DH")
 
-load(file.path("~/data/donnees_R","Agreste","AGRESTE_2014.rda"))
-AGRESTE_2014<-AGRESTE_2014[AGRESTE_2014$CODE_REG!="00",]
-DHCulture<-merge(unique(DHCulture),unique(AGRESTE_2014), by="ESPECE")
-DHCulture$DHSurf<-DHCulture$DH*DHCulture$Area
+DHCulture_tbl <- copy_to(sc, DHCulture, overwrite = TRUE)
+#Ajouter DH al base (amm x ESPECE x cp, surface)
+DHCulture_tbl<- DHCulture_tbl %>%
+  inner_join(surf_espece_tbl, by=c("ESPECE")) %>%
+  mutate(DHSurf= DH * surface) 
+#Aggreger la (dose*surf)pour tous les cultures
+DHCulture_Somme_tbl<- DHCulture_tbl %>%
+  group_by(AMM, Code_postal) %>%
+  summarise(SumDHSurf=sum(DHSurf))
 
-SommeDHCulture<-aggregate(DHSurf~AMM+CODE_REG,data = DHCulture,sum, na.rm=TRUE)
-SommeDHCulture<- ChangeNameCol(SommeDHCulture, "DHSurf","SumDHSurf")
-SommeDHCulture<-SommeDHCulture[SommeDHCulture$AMM!="",]
-BaseDH<-merge(DHCulture, SommeDHCulture, by=c("AMM","CODE_REG"))
-BaseDH$CoefDH<-BaseDH$DHSurf/BaseDH$SumDHSurf
-BaseDH$DHSurf<-NULL
-BaseDH$SumDHSurf<-NULL
-BaseDH_tbl <- copy_to(sc, BaseDH)
+DHCulture_tbl<-DHCulture_tbl %>%
+  inner_join(DHCulture_Somme_tbl, by=c("Code_postal", "AMM")) %>%
+  mutate(CoefDH= DHSurf/SumDHSurf)
 
-#coefpk/coefdh
-BaseS_tbl <- BasePKS_tbl %>%
-  left_join(BaseDH_tbl, by=c("PHYTOPROD" = "AMM", "ESPECE","CODE_REG")) %>%
-  mutate(Coef= CoefPk/CoefDH)
+BaseS_tbl<- BasePKS_tbl %>%
+  inner_join(DHCulture_tbl, by=c("PHYTOPROD"="AMM", "ESPECE", "Code_postal", "surface"))
+
 
 #BaseS <- collect(BaseS_tbl)
-spark_write_table(BaseS_tbl,"coefpk_cp")
+spark_write_table(BaseS_tbl,"coefpk_coefdh_cp")
 #spark_write_csv(BaseS_tbl, "/home/jehandrissi/spark-warehouse/CoefPK_CP/")
 #db_drop_table(sc, "___") --> remove data from spark
-CoefPK_cp<-spark_read_parquet(sc,"coefpk_cp","/home/jehandrissi/spark-warehouse/coefpk_cp/")
+CoefPK_cp<-spark_read_parquet(sc,"coefpk_coefdh_cp","/home/jehandrissi/spark-warehouse/coefpk_coefdh_cp/")
 print(CoefPK_cp, n=50, width = Inf)
 
 CoefPK_cp %>% 

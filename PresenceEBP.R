@@ -95,7 +95,7 @@ saveAs(df4,"Presence_EBP",folderOut)
 df44<-merge(df4,unique(EPHY[,c("AMM","Fonction")]), by= "AMM",all.x=TRUE)
 
 #expect_equal(nrow(df4),nrow((df44)))
-#5346 - 5440 == -94 -> Les produits qui appartiennent à plus d'une categorie
+#5346 - 5440 == -94 -> Les produits qui appartiennent ? plus d'une categorie
 
 #On cherche les produits avec plus qu'une categorie
 dfDupl<-df44[which(duplicated(df44$AMM)),]
@@ -110,7 +110,7 @@ Duplicate$AMM=rownames(Duplicate)
 n1=length(unique(EPHY$AMM))
 n2=length(unique(EPHY[EPHY$Gamme.d.usages%in%"Professionnel",]$AMM))
 n3=length(unique(EPHY[EPHY$Filiere%in%"Grandes cultures",]$AMM))
-n4=length(unique(EPHY[EPHY$Filiere%in%"Traitements généraux toutes cultures",]$AMM))
+n4=length(unique(EPHY[EPHY$Filiere%in%"Traitements g?n?raux toutes cultures",]$AMM))
 
 df5 <- data.frame(Total = n1, UsagePro = n2, GC = n3 , TC = n4)
 
@@ -129,7 +129,7 @@ df6<-as.data.frame(df6)
 
 #df6 est pour tt la base EPHY -> Je refais le travail pour EPHY$Filiere %in% c("GC","TC") et usage pro
 
-GTC<-subset(EPHY, EPHY$Filiere %in% c("Grandes cultures","Traitements généraux toutes cultures"))
+GTC<-subset(EPHY, EPHY$Filiere %in% c("Grandes cultures","Traitements gÃ©nÃ©raux toutes culture"))
 GTC<-subset(GTC, GTC$Gamme.d.usages%in% c("Professionnel"))
 AMMGTC<- unique(GTC$AMM)
 gtc<-c()
@@ -151,7 +151,7 @@ df66<-t(df66)
 df66<-as.data.frame(df66)
 
 ####### table par categorie GTC Usage PRO#######################
-EPHY[EPHY$Fonction%in%"Stimul. Déf. Naturelles",]<-"Stimulateur des défenses naturelles"
+EPHY[EPHY$Fonction%in%"Stimul. D?f. Naturelles",]<-"Stimulateur des d?fenses naturelles"
 dfCorrespondanceGTC<-merge(dfCorrespondanceGTC,unique(EPHY[,c("AMM","Fonction")]), by= "AMM",all.x=TRUE)
 df666<- dfCorrespondanceGTC %>%
   split(.$Fonction) %>%
@@ -175,11 +175,11 @@ p <- plot_ly(dat, x = ~barplot, y = ~Acaricide.Freq, type = 'bar', name = 'Acari
   add_trace(y = ~Molluscicide.Freq, name = 'Molluscicide') %>%
   
   add_trace(y = ~Virucide.Freq, name = 'Virucide') %>%
-  add_trace(y = ~Bactéricide.Freq, name = 'Bactéricide') %>%
+  add_trace(y = ~Bact?ricide.Freq, name = 'Bact?ricide') %>%
   add_trace(y = ~Herbicide.Freq, name = 'Herbicide') %>%
-  add_trace(y = ~Nématicide.Freq, name = 'Nématicide') %>%
-  add_trace(y = ~Stimulateur.des.défenses.naturelles.Freq, name = 'Stimulateur.des.défenses.naturelles') %>%
-  add_trace(y = ~Dévitalisation.Freq, name = 'Dévitalisation') %>%
+  add_trace(y = ~N?maticide.Freq, name = 'N?maticide') %>%
+  add_trace(y = ~Stimulateur.des.d?fenses.naturelles.Freq, name = 'Stimulateur.des.d?fenses.naturelles') %>%
+  add_trace(y = ~D?vitalisation.Freq, name = 'D?vitalisation') %>%
   add_trace(y = ~Taupicide.Freq, name = 'Taupicide') %>%
   add_trace(y = ~Rodenticide.Freq, name = 'Rodenticide.Freq') %>%
   add_trace(y = ~Insecticide.Freq, name = 'Insecticide') %>%
@@ -239,8 +239,8 @@ p <- plot_ly(Dist_Cast, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbicid
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
   add_trace(y = ~Acaricide, name = 'Acaricide') %>%
-  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
-  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  add_trace(y = ~D?vitalisation, name = 'D?vitalisation') %>%
+  add_trace(y = ~Bact?ricide, name = 'Bact?ricide') %>%
   
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 
@@ -278,8 +278,8 @@ p <- plot_ly(Dist_Cast_EPHY, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Her
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
   add_trace(y = ~Acaricide, name = 'Acaricide') %>%
-  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
-  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
+  add_trace(y = ~D?vitalisation, name = 'D?vitalisation') %>%
+  add_trace(y = ~Bact?ricide, name = 'Bact?ricide') %>%
   
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 
@@ -338,25 +338,25 @@ insertRows <- function(dat, newlines, indices){
   dat <- gx.sort.df(~lines, dat)
   subset(dat, select=-ncol(dat))
 }
-newlines <- rbind( c("ble tendre","Blé"), 
+newlines <- rbind( c("ble tendre","Bl?"), 
                    
-                   c("mais gr","Maïs"),
+                   c("mais gr","Ma?s"),
                    
-                   c("ble dur","Traitements généraux"),c("ble tendre","Traitements généraux"), c("canne a s","Traitements généraux"), 
-                   c("colza","Traitements généraux"), c("mais ens","Traitements généraux"), c("mais gr","Traitements généraux"), 
-                   c("orge","Traitements généraux"),  c("pois","Traitements généraux"), c("pomme de t","Traitements généraux"), 
-                   c("tournesol","Traitements généraux"), c("triticale","Traitements généraux"), 
+                   c("ble dur","Traitements g?n?raux"),c("ble tendre","Traitements g?n?raux"), c("canne a s","Traitements g?n?raux"), 
+                   c("colza","Traitements g?n?raux"), c("mais ens","Traitements g?n?raux"), c("mais gr","Traitements g?n?raux"), 
+                   c("orge","Traitements g?n?raux"),  c("pois","Traitements g?n?raux"), c("pomme de t","Traitements g?n?raux"), 
+                   c("tournesol","Traitements g?n?raux"), c("triticale","Traitements g?n?raux"), 
                    
-                   c("ble tendre","Céréales"), c("orge","Céréales"), c("triticale","Céréales"),
+                   c("ble tendre","C?r?ales"), c("orge","C?r?ales"), c("triticale","C?r?ales"),
                    
-                   c("ble tendre","Céréales à paille"), c("orge","Céréales à paille"), c("triticale","Céréales à paille"),
+                   c("ble tendre","C?r?ales ? paille"), c("orge","C?r?ales ? paille"), c("triticale","C?r?ales ? paille"),
                    
-                   c("ble dur","Jachères et cultures intermédiaires"),c("pois","Jachères et cultures intermédiaires"),
-                   c("pomme de t","Jachères et cultures intermédiaires"), c("ble tendre","Jachères et cultures intermédiaires"),
-                   c("canne a s","Jachères et cultures intermédiaires"), c("colza","Jachères et cultures intermédiaires"),
-                   c("mais ens","Jachères et cultures intermédiaires"), c("mais gr","Jachères et cultures intermédiaires"), 
-                   c("orge","Jachères et cultures intermédiaires"), c("tournesol","Jachères et cultures intermédiaires"), 
-                   c("triticale","Jachères et cultures intermédiaires")
+                   c("ble dur","Jach?res et cultures interm?diaires"),c("pois","Jach?res et cultures interm?diaires"),
+                   c("pomme de t","Jach?res et cultures interm?diaires"), c("ble tendre","Jach?res et cultures interm?diaires"),
+                   c("canne a s","Jach?res et cultures interm?diaires"), c("colza","Jach?res et cultures interm?diaires"),
+                   c("mais ens","Jach?res et cultures interm?diaires"), c("mais gr","Jach?res et cultures interm?diaires"), 
+                   c("orge","Jach?res et cultures interm?diaires"), c("tournesol","Jach?res et cultures interm?diaires"), 
+                   c("triticale","Jach?res et cultures interm?diaires")
                    
 )
 colnames(newlines)<-c("ESPECE","culture")
@@ -451,9 +451,9 @@ p <- plot_ly(Dist_Cast_GC, x = ~T_F, y = ~Herbicide, type = 'bar', name = 'Herbi
   add_trace(y = ~Insecticide, name = 'Insecticide') %>%
   add_trace(y = ~Molluscicide, name = 'Molluscicide') %>%
   add_trace(y = ~Acaricide, name = 'Acaricide') %>%
-  add_trace(y = ~Dévitalisation, name = 'Dévitalisation') %>%
-  add_trace(y = ~Bactéricide, name = 'Bactéricide') %>%
-  add_trace(y = ~Nématicide, name = 'Nématicide') %>%
+  add_trace(y = ~D?vitalisation, name = 'D?vitalisation') %>%
+  add_trace(y = ~Bact?ricide, name = 'Bact?ricide') %>%
+  add_trace(y = ~N?maticide, name = 'N?maticide') %>%
   add_trace(y = ~Taupicide, name = 'Taupicide') %>%
   layout(yaxis = list(title = 'Volume BNVD'), barmode = 'stack')
 p
